@@ -3,7 +3,7 @@ import asyncio
 import logging
 import os
 
-from tock.server import TockServer, TockMode
+from tock.server import Webhook, TockMode
 from tock.websocket import TockWebsocket
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)

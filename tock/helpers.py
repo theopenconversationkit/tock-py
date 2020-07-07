@@ -2,7 +2,21 @@
 from datetime import datetime
 
 
-def buildMessage(request_id, text):
+def buildMessage(text):
+    return {
+        "delay": 0,
+        "suggestions": [],
+        "text": {
+            "text": text,
+            "args": [],
+            "toBeTranslated": True,
+            "length": text.__len__()
+        },
+        "type": "sentence"
+    }
+
+
+def buildBotResponse(request_id, messages):
     return {
         "botResponse": {
             "context": {
@@ -10,19 +24,7 @@ def buildMessage(request_id, text):
                 "requestId": request_id
             },
             "entities": [],
-            "messages": [
-                {
-                    "delay": 0,
-                    "suggestions": [],
-                    "text": {
-                        "text": text,
-                        "args": [],
-                        "toBeTranslated": True,
-                        "length": text.__len__()
-                    },
-                    "type": "sentence"
-                }
-            ],
+            "messages": messages,
             "storyId": "python_story"
         },
         "requestId": request_id

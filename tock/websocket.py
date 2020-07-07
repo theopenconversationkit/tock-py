@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+from typing import Callable
 
 import aiohttp
 import sys
-
-from tock.helpers import buildMessage
-from tock.schemas import TockMessageSchema
 
 
 class TockWebsocket:
@@ -16,15 +14,17 @@ class TockWebsocket:
 
     def __init__(
             self,
-            apikey="apikey_is_undefined",
-            host="demo-bot.tock.ai",
-            port=443,
-            protocol="wss"
+            apikey: str = "apikey_is_undefined",
+            host: str = "demo-bot.tock.ai",
+            port: int = 443,
+            protocol: str = "wss",
+            bot_handler: Callable = lambda text: None
     ):
         self.__apikey = apikey
         self.__host = host
         self.__port = port
         self.__protocol = protocol
+        self.__bot_handler = bot_handler
         self.__logger = logging.getLogger(__name__)
 
     async def start(self):
@@ -35,12 +35,7 @@ class TockWebsocket:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     try:
                         self.__logger.debug("new event received : " + msg.data)
-                        tock_message = self.__load(msg.data)
-                        response = buildMessage(
-                            request_id=tock_message.request_id,
-                            text="Yo from python websocket !!!!"
-                        )
-                        tock_response = TockMessageSchema().dumps(response)
+                        tock_response = self.__bot_handler(json.loads(msg.data))
                         self.__logger.debug("new event sent : " + tock_response)
                         await ws.send_str(tock_response)
                     except:
@@ -53,10 +48,3 @@ class TockWebsocket:
                 elif msg.type == aiohttp.WSMsgType.ERROR:
                     self.__logger.error(msg.data)
                     break
-
-    def __load(self, payload):
-        try:
-            data = json.loads(payload)
-            return TockMessageSchema().load(data)
-        except Exception as ex:
-            self.__logger.error(f'Error when loading json\n\npayload: {payload}', exc_info=True)
