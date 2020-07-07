@@ -1,5 +1,10 @@
+clean-build:
+	rm --force --recursive build/
+	rm --force --recursive dist/
+	rm --force --recursive *.egg-info
+
 install:
 	pip install -r requirements.txt
 
-start:
-	FLASK_ENV=development FLASK_APP=tock.py flask run
+lint:
+	flake8 ./tock
