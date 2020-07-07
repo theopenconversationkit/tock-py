@@ -10,7 +10,7 @@ class PlayerType(Enum):
 
 class Entity:
 
-    def __init__(self, type: str, role: str, evaluated: bool, new: bool, content: str = None, value: str = None, ):
+    def __init__(self, type: str, role: str, evaluated: bool, new: bool, content: str = None, value: str = None):
         self.type = type
         self.role = role
         self.content = content
