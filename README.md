@@ -13,6 +13,7 @@ Build chatbots using Tock and Python
     - Managing User / conversational context
     - Testing
     - Packaging
+ - Mainteners wanted
     
 ## Prerequisites
 
