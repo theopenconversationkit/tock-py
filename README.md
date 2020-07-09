@@ -31,7 +31,8 @@ Install dependencies
 
     $ make init
 
-## Usage Websocket mode
+
+## Usage Websocket mode
 
     from tock.bot import TockBot
 
@@ -41,7 +42,8 @@ Install dependencies
 
     bot.start_websocket(apikey=os.environ['TOCK_APIKEY'])
 
-## Usage Webhook mode
+
+## Usage Webhook mode
 
     from tock.bot import TockBot
 
