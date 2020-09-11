@@ -4,6 +4,8 @@ from typing import Callable
 
 from aiohttp import web
 
+from tock.schemas import TockMessageSchema
+
 
 class TockWebhook:
     """
@@ -32,7 +34,7 @@ class TockWebhook:
     async def __webhook(self, request):
         self.__logger.debug("new event received")
         bot_request = await request.json()
-        tock_response = self.__bot_handler(bot_request)
+        tock_response = self.__bot_handler(TockMessageSchema().load(bot_request))
 
         self.__logger.debug("new event sent : " + tock_response)
         return web.Response(text=tock_response)

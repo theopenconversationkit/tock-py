@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import sys
 from json import JSONDecodeError
 from typing import Callable
 
 import aiohttp
-import sys
+
+from tock.models import TockMessage
+from tock.schemas import TockMessageSchema
 
 
 class TockWebsocket:
@@ -36,7 +39,8 @@ class TockWebsocket:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     try:
                         self.__logger.debug("new event received : " + msg.data)
-                        tock_response = self.__bot_handler(json.loads(msg.data))
+                        tock_message: TockMessage = TockMessageSchema().load(json.loads(msg.data))
+                        tock_response = self.__bot_handler(tock_message)
                         self.__logger.debug("new event sent : " + tock_response)
                         await ws.send_str(tock_response)
                     except JSONDecodeError:
