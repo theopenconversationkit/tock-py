@@ -13,7 +13,6 @@ Build chatbots using Tock and Python
     - Managing User / conversational context
     - Testing
     - Packaging
- - Mainteners wanted
     
 ## Prerequisites
 
@@ -32,7 +31,6 @@ Install dependencies
 
     $ make init
 
-
 ## Usage Websocket mode
 
     from tock.bot import TockBot
@@ -42,7 +40,6 @@ Install dependencies
     bot.add_story('greetings', lambda send: send(text="Greetings StoryHander !!!!"))
 
     bot.start_websocket(apikey=os.environ['TOCK_APIKEY'])
-
 
 ## Usage Webhook mode
 
