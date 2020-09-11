@@ -34,7 +34,7 @@ class TockBot:
         self.__namespace: str = "default"
         self.__bus = TockBotBus
         self.__stories = Stories()
-        self.__error_handler: Callable = lambda send: send("Default error handler")
+        self.__error_handler: Callable = lambda bus: bus.send("Default error handler")
         self.__context = Context()
 
     def namespace(self, namespace: str):
