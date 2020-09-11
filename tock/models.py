@@ -233,7 +233,7 @@ class Card(BotMessage):
             self.__attachment = Attachment(url, type)
             return self
 
-        def add_action(self, title: Union[str, I18nText], url: str):
+        def add_action(self, title: Union[str, I18nText], url: Optional[str] = None):
             if not isinstance(title, I18nText):
                 title = I18nText(
                     text=title,
