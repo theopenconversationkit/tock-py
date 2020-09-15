@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import abc
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from re import split
 from typing import List, Union, Optional
 
 from tock.intent import IntentName
@@ -13,103 +13,84 @@ class PlayerType(Enum):
     BOT = "bot"
 
 
+@dataclass
 class Entity:
-
-    def __init__(self, type: str, role: str, evaluated: bool, new: bool, content: str = None, value: str = None):
-        self.type = type
-        self.role = role
-        self.content = content
-        self.value = value
-        self.evaluated = evaluated
-        self.sub_entities = []
-        self.new = new
+    type: str
+    role: str
+    evaluated: bool
+    sub_entities = []
+    new: bool
+    content: str = None
+    value: Optional[str] = None
 
 
+@dataclass
 class Message:
-
-    def __init__(self, type: str, text: str):
-        self.type = type
-        self.text = text
+    type: str
+    text: str
 
 
+@dataclass
 class ConnectorType:
-
-    def __init__(self, id: str, user_interface_type: str):
-        self.id = id
-        self.user_interface_type = user_interface_type
+    id: str
+    user_interface_type: str
 
 
+@dataclass
 class UserId:
-
-    def __init__(self, id: str, type: PlayerType, client_id: str = None):
-        self.id = id
-        self.type = type
-        self.client_id = client_id
+    id: str
+    type: PlayerType
+    client_id: Optional[str] = None
 
 
+@dataclass
 class User:
-
-    def __init__(self, timezone: str, locale: str, test: bool):
-        self.timezone = timezone
-        self.locale = locale
-        self.test = test
+    timezone: str
+    locale: str
+    test: bool
 
 
+@dataclass
 class RequestContext:
-
-    def __init__(self,
-                 namespace: str,
-                 language: str,
-                 connector_type: ConnectorType,
-                 user_interface: str,
-                 application_id: str,
-                 user_id: UserId,
-                 bot_id: UserId,
-                 user: User):
-        self.namespace = namespace
-        self.language = language
-        self.connector_type = connector_type
-        self.user_interface = user_interface
-        self.application_id = application_id
-        self.user_id = user_id
-        self.bot_id = bot_id
-        self.user = user
+    namespace: str
+    language: str
+    connector_type: ConnectorType
+    user_interface: str
+    application_id: str
+    user_id: UserId
+    bot_id: UserId
+    user: User
 
 
+@dataclass
 class I18nText:
-
-    def __init__(self,
-                 text: str,
-                 args: [],
-                 to_be_translated: bool,
-                 length: int,
-                 key: Optional[str] = None
-                 ):
-        self.text = text
-        self.args = args
-        self.to_be_translated = to_be_translated
-        self.length = length
-        self.key = key
+    text: str
+    args: []
+    to_be_translated: bool
+    length: int
+    key: Optional[str] = None
 
 
+@dataclass
 class Suggestion:
-
-    def __init__(self, title: I18nText):
-        self.title = title
+    title: I18nText
 
 
+@dataclass
 class BotMessage(abc.ABC):
-
-    def __init__(self, delay: int = 0):
-        self.delay = delay
+    delay: int
 
 
+@dataclass
 class Sentence(BotMessage):
+    text: I18nText
+    suggestions: List[Suggestion]
+    delay: int
 
     def __init__(self,
                  text: I18nText,
                  suggestions: List[Suggestion],
-                 delay: int):
+                 delay: int = 0):
         self.text = text
         self.suggestions = suggestions
         super().__init__(delay)
@@ -168,28 +149,32 @@ class AttachmentType(Enum):
     FILE = "file"
 
 
+@dataclass
 class Attachment:
-
-    def __init__(self, url: str, type: Optional[AttachmentType]):
-        self.url = url
-        self.type = type
+    url: str
+    type: Optional[AttachmentType]
 
 
+@dataclass
 class Action:
-
-    def __init__(self, title: I18nText, url: Optional[str]):
-        self.title = title
-        self.url = url
+    title: I18nText
+    url: Optional[str]
 
 
+@dataclass
 class Card(BotMessage):
+    title: Optional[I18nText]
+    sub_title: Optional[I18nText]
+    attachment: Optional[Attachment]
+    actions: List[Action]
+    delay: int
 
     def __init__(self,
                  title: Optional[I18nText],
                  sub_title: Optional[I18nText],
                  attachment: Optional[Attachment],
                  actions: List[Action],
-                 delay: int):
+                 delay: int = 0):
         self.title = title
         self.sub_title = sub_title
         self.attachment = attachment
@@ -258,9 +243,12 @@ class Card(BotMessage):
             )
 
 
+@dataclass
 class Carousel(BotMessage):
+    cards: List[Card]
+    delay: int
 
-    def __init__(self, cards: List[Card], delay: int):
+    def __init__(self, cards: List[Card], delay: int = 0):
         self.cards = cards
         super().__init__(delay)
 
@@ -281,38 +269,32 @@ class Carousel(BotMessage):
             )
 
 
+@dataclass
 class ResponseContext:
-
-    def __init__(self, request_id: str, date: datetime):
-        self.request_id = request_id
-        self.date = date
+    request_id: str
+    date: datetime
 
 
+@dataclass
 class BotRequest:
-
-    def __init__(self, intent: IntentName, entities: List[Entity], message: Message, story_id: str,
-                 request_context: RequestContext = None):
-        self.intent = intent
-        self.entities = entities
-        self.message = message
-        self.story_id = story_id
-        self.request_context = request_context
+    intent: IntentName
+    entities: List[Entity]
+    message: Message
+    story_id: str
+    request_context: RequestContext = None
 
 
+@dataclass
 class BotResponse:
-
-    def __init__(self, messages: List[BotMessage], story_id: str, step: str, context: ResponseContext,
-                 entities: List[Entity]):
-        self.messages = messages
-        self.story_id = story_id
-        self.step = step
-        self.entities = entities
-        self.context = context
+    messages: List[BotMessage]
+    story_id: str
+    step: str
+    context: ResponseContext
+    entities: List[Entity]
 
 
+@dataclass
 class TockMessage:
-
-    def __init__(self, request_id: str, bot_request: BotRequest = None, bot_response: BotResponse = None):
-        self.bot_request = bot_request
-        self.bot_response = bot_response
-        self.request_id = request_id
+    request_id: str
+    bot_request: BotRequest = None
+    bot_response: BotResponse = None

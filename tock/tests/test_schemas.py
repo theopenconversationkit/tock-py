@@ -209,7 +209,7 @@ class TestEntitySchema(TestCase):
         expected = given_entity()
         schema = EntitySchema()
         result = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestMessageSchema(TestCase):
@@ -217,7 +217,7 @@ class TestMessageSchema(TestCase):
         expected = given_message()
         schema = MessageSchema()
         result: Message = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestConnectorTypeSchema(TestCase):
@@ -225,7 +225,7 @@ class TestConnectorTypeSchema(TestCase):
         expected = given_connector_type()
         schema = ConnectorTypeSchema()
         result: ConnectorType = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestUserIdSchema(TestCase):
@@ -233,7 +233,7 @@ class TestUserIdSchema(TestCase):
         expected = given_user_id()
         schema = UserIdSchema()
         result: UserId = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestUserSchema(TestCase):
@@ -241,7 +241,7 @@ class TestUserSchema(TestCase):
         expected = given_user()
         schema = UserSchema()
         result: User = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestRequestContextSchema(TestCase):
@@ -249,7 +249,7 @@ class TestRequestContextSchema(TestCase):
         expected = given_request_context()
         schema = RequestContextSchema()
         result: RequestContext = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestSuggestionSchema(TestCase):
@@ -257,7 +257,7 @@ class TestSuggestionSchema(TestCase):
         expected = given_suggestion()
         schema = SuggestionSchema()
         result: Suggestion = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestI18nTextSchema(TestCase):
@@ -265,7 +265,7 @@ class TestI18nTextSchema(TestCase):
         expected = given_i18n_text()
         schema = I18nTextSchema()
         result: I18nText = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestSentenceSchema(TestCase):
@@ -275,7 +275,7 @@ class TestSentenceSchema(TestCase):
         dumps = schema.dumps(expected)
         loads = json.loads(dumps)
         result: Sentence = schema.load(loads)
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestAttachmentSchema(TestCase):
@@ -285,7 +285,7 @@ class TestAttachmentSchema(TestCase):
         dumps = schema.dumps(expected)
         loads = json.loads(dumps)
         result: Attachment = schema.load(loads)
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestActionSchema(TestCase):
@@ -293,7 +293,7 @@ class TestActionSchema(TestCase):
         expected = given_action()
         schema = ActionSchema()
         result: Action = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestCardSchema(TestCase):
@@ -303,7 +303,7 @@ class TestCardSchema(TestCase):
         dumps = schema.dumps(expected)
         loads = json.loads(dumps)
         result: Card = schema.load(loads)
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestCarouselSchema(TestCase):
@@ -313,7 +313,7 @@ class TestCarouselSchema(TestCase):
         dumps = schema.dumps(expected)
         loads = json.loads(dumps)
         result: Carousel = schema.load(loads)
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestResponseContextSchema(TestCase):
@@ -323,7 +323,7 @@ class TestResponseContextSchema(TestCase):
         dumps = schema.dumps(expected)
         loads = json.loads(dumps)
         result: Sentence = schema.load(loads)
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestBotRequestSchema(TestCase):
@@ -333,7 +333,7 @@ class TestBotRequestSchema(TestCase):
         dumps = schema.dumps(expected)
         loads = json.loads(dumps)
         result: BotRequest = schema.load(loads)
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestBotResponseSchema(TestCase):
@@ -343,7 +343,7 @@ class TestBotResponseSchema(TestCase):
         dumps = schema.dumps(expected)
         loads = json.loads(dumps)
         result: BotResponse = schema.load(loads)
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 class TestTockMessageSchema(TestCase):
@@ -351,7 +351,7 @@ class TestTockMessageSchema(TestCase):
         expected = given_tock_message()
         schema = TockMessageSchema()
         result: TockMessage = schema.load(json.loads(schema.dumps(expected)))
-        compare(expected, result)
+        self.assertEqual(expected, result)
 
 
 if __name__ == '__main__':
