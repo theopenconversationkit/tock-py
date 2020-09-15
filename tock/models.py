@@ -281,7 +281,7 @@ class BotRequest:
     entities: List[Entity]
     message: Message
     story_id: str
-    request_context: RequestContext = None
+    context: RequestContext = None
 
 
 @dataclass

@@ -257,7 +257,7 @@ class BotRequestSchema(Schema):
     entities = fields.List(fields.Nested(EntitySchema), required=True)
     message = fields.Nested(MessageSchema())
     story_id = fields.String(required=True)
-    request_context = fields.Nested(RequestContextSchema, required=False)
+    context = fields.Nested(RequestContextSchema, required=False)
 
     def on_bind_field(self, field_name, field_obj):
         field_obj.data_key = camelcase(field_obj.data_key or field_name)

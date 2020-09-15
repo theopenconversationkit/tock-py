@@ -12,13 +12,14 @@
     >>> TockBot().namespace("my-bot").start_websocket(apikey=os.environ['TOCK_APIKEY'])
 
 """
-import asyncio
 import logging
 from datetime import datetime
 from typing import Callable, Type, List
 
+import asyncio
+
 from tock.bus import TockBotBus, BotBus
-from tock.context import Context
+from tock.context import Contexts, Context
 from tock.intent import IntentName, Intent
 from tock.models import TockMessage, BotRequest, BotMessage, BotResponse, ResponseContext
 from tock.schemas import TockMessageSchema
@@ -35,7 +36,7 @@ class TockBot:
         self.__bus = TockBotBus
         self.__stories = Stories()
         self.__error_handler: Callable = lambda bus: bus.send("Default error handler")
-        self.__context = Context()
+        self.__contexts = Contexts()
 
     def namespace(self, namespace: str):
         self.__namespace = namespace
@@ -87,13 +88,20 @@ class TockBot:
     def __bot_handler(self, tock_message: TockMessage) -> str:
         messages: List[BotMessage] = []
         request: BotRequest = tock_message.bot_request
+        current_user_id = request.context.user_id
 
-        story_class: Type[Story] = self.__stories.find_story(Intent(request.intent), self.__context.current_story)
+        context = self.__contexts.getcontext(current_user_id)
+        if context is None:
+            context = Context(current_user_id)
+            self.__contexts.registercontext(context)
+        context.add_entities(request.entities)
 
-        self.__context.entities = self.__context.entities + request.entities
-        self.__context.current_story = story_class
+        story_class: Type[Story] = self.__stories.find_story(Intent(request.intent), context.current_story)
+        context.previous_intent = request.intent
+        context.current_story = story_class
+
         bus = self.__bus(
-            context=self.__context,
+            context=context,
             send=lambda bot_message: messages.append(bot_message),
             request=request
         )

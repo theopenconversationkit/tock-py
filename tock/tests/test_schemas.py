@@ -33,7 +33,7 @@ def given_bot_request() -> BotRequest:
             text="text"
         ),
         story_id="story_id",
-        request_context=RequestContext(
+        context=RequestContext(
             namespace="namespace",
             language="fr",
             connector_type=ConnectorType(
@@ -129,9 +129,9 @@ def given_carousel() -> Carousel:
         .build()
 
 
-def given_user_id() -> UserId:
+def given_user_id(id: str) -> UserId:
     return UserId(
-        id="id",
+        id=id,
         type=PlayerType.USER,
         client_id="client_id"
     )
@@ -190,8 +190,8 @@ def given_request_context() -> RequestContext:
         connector_type=given_connector_type(),
         user_interface="text",
         application_id="application_id",
-        user_id=given_user_id(),
-        bot_id=given_user_id(),
+        user_id=given_user_id("user_id"),
+        bot_id=given_user_id("user_id"),
         user=given_user()
     )
 
@@ -230,7 +230,7 @@ class TestConnectorTypeSchema(TestCase):
 
 class TestUserIdSchema(TestCase):
     def test_json_serialization(self):
-        expected = given_user_id()
+        expected = given_user_id("user_id")
         schema = UserIdSchema()
         result: UserId = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)

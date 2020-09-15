@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tock Bot</title>
+    <meta charset="UTF-8"/>
+    <!-- React -->
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <!-- React DOM -->
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <!-- Tock Widget -->
+    <script src="https://unpkg.com/tock-react-kit@latest/build/tock-react-kit.umd.js"></script>
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" />
+</head>
+
+<body>
+<div id="app"></div>
+
+<script>
+    TockReact.renderChat(
+        document.getElementById('app'),
+        //Set your web connector url here
+        'https://demo-bot.tock.ai/io/lavolp/new_assistant/web',
+        //options: https://github.com/theopenconversationkit/tock-react-kit/blob/master/src/TockTheme.ts
+        {
+            fontFamily: 'Montserrat, Arial, Helvetica, sans-serif',
+            fontSize: '16px',
+            botColor: '#0A2342',
+            cardColor: '#FFFDF7',
+            borderRadius: '1em',
+            styles: {
+                chat: `background-image: radial-gradient(circle 79vh at bottom center, #84BC9C, #2CA58D);`,
+                quickReply: `background: #F46197; color: #FFFDF7; border-color: #FFFDF7;`,
+                card: `& button { background: #F46197; color: #FFFDF7; border-color: #FFFDF7; }`
+            }
+        }
+    );
+</script>
+</body>
+</html>
