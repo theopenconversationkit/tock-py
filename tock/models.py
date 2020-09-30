@@ -281,14 +281,14 @@ class BotRequest:
     entities: List[Entity]
     message: Message
     story_id: str
-    request_context: RequestContext = None
+    context: RequestContext = None
 
 
 @dataclass
 class BotResponse:
     messages: List[BotMessage]
     story_id: str
-    step: str
+    step: Optional[str]
     context: ResponseContext
     entities: List[Entity]
 

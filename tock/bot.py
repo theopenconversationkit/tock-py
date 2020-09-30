@@ -18,7 +18,8 @@ from datetime import datetime
 from typing import Callable, Type, List
 
 from tock.bus import TockBotBus, BotBus
-from tock.context import Context
+from tock.context.contexts import Contexts
+from tock.context.memory import MemoryContexts
 from tock.intent import IntentName, Intent
 from tock.models import TockMessage, BotRequest, BotMessage, BotResponse, ResponseContext
 from tock.schemas import TockMessageSchema
@@ -35,10 +36,14 @@ class TockBot:
         self.__bus = TockBotBus
         self.__stories = Stories()
         self.__error_handler: Callable = lambda bus: bus.send("Default error handler")
-        self.__context = Context()
+        self.__contexts: Contexts = MemoryContexts()
 
     def namespace(self, namespace: str):
         self.__namespace = namespace
+        return self
+
+    def use_contexts(self, contexts: Contexts):
+        self.__contexts = contexts
         return self
 
     def register_bus(self, bus: BotBus):
@@ -87,19 +92,24 @@ class TockBot:
     def __bot_handler(self, tock_message: TockMessage) -> str:
         messages: List[BotMessage] = []
         request: BotRequest = tock_message.bot_request
+        current_user_id = request.context.user_id
 
-        story_class: Type[Story] = self.__stories.find_story(Intent(request.intent), self.__context.current_story)
+        context = self.__contexts.getcontext(current_user_id)
+        context.add_entities(request.entities)
 
-        self.__context.entities = self.__context.entities + request.entities
-        self.__context.current_story = story_class.__name__
+        story_class: Type[Story] = self.__stories.find_story(Intent(request.intent), context.current_story)
+        context.previous_intent = Intent(request.intent)
+
         bus = self.__bus(
-            context=self.__context,
+            context=context,
             send=lambda bot_message: messages.append(bot_message),
             request=request
         )
 
         if story_class is not None:
-            self.__logger.info("story found %s for intent %s", story_class.__name__, request.intent)
+            story_name: str = story_class.__name__
+            self.__logger.info("story found %s for intent %s", story_name, request.intent)
+            context.current_story = story_name
             story = self.__create(story_class, bus)
         else:
             self.__logger.info("No story for intent %s", request.intent)
@@ -124,6 +134,7 @@ class TockBot:
             request_id=tock_message.request_id,
         )
         tock_response: str = TockMessageSchema().dumps(response)
+        self.__contexts.save(context)
         return tock_response
 
     def __create(self, story_class: Type[Story], bus: BotBus):
