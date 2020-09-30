@@ -2,8 +2,8 @@
 import abc
 from typing import Callable, List, Union
 
-from tock.intent import Intent, Intent, IntentName
-from tock.context import Context
+from tock.context.context import Context
+from tock.intent import Intent, IntentName
 from tock.models import BotMessage, BotRequest, Entity, Sentence
 
 
