@@ -4,8 +4,6 @@ import unittest
 from datetime import datetime
 from unittest import TestCase
 
-from testfixtures import compare
-
 from tock.models import ConnectorType, Entity, Message, UserId, User, RequestContext, PlayerType, Suggestion, I18nText, \
     Sentence, \
     ResponseContext, BotRequest, BotResponse, TockMessage, Card, Attachment, AttachmentType, Action, Carousel
@@ -33,7 +31,7 @@ def given_bot_request() -> BotRequest:
             text="text"
         ),
         story_id="story_id",
-        request_context=RequestContext(
+        context=RequestContext(
             namespace="namespace",
             language="fr",
             connector_type=ConnectorType(
@@ -129,9 +127,9 @@ def given_carousel() -> Carousel:
         .build()
 
 
-def given_user_id() -> UserId:
+def given_user_id(user_id: str = "id1") -> UserId:
     return UserId(
-        id="id",
+        id=user_id,
         type=PlayerType.USER,
         client_id="client_id"
     )
