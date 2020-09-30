@@ -87,6 +87,11 @@ class Stories:
         self.__stories_by_other_starter_intents: Dict[Intent, List[Type[Story]]] = {}
         self.__stories_by_secondary_intents: Dict[Intent, List[Type[Story]]] = {}
 
+    def __find_story_by_name(self, story_name: str) -> Optional[Type[Story]]:
+        for story in self.__stories_by_main_intent.values():
+            if story.__name__ == story_name:
+                return story
+
     def register_story(self, story_class: Type[Story]):
 
         self.__stories_by_main_intent[story_class.intent()] = story_class
@@ -101,8 +106,8 @@ class Stories:
                 self.__stories_by_secondary_intents[intent] = []
             self.__stories_by_secondary_intents[intent].append(story_class)
 
-    def find_story(self, intent: Intent, current_story: Type[Story]) -> Optional[Type[Story]]:
-
+    def find_story(self, intent: Intent, current_story_name: str) -> Optional[Type[Story]]:
+        current_story: Optional[Type[Story]] = self.__find_story_by_name(current_story_name)
         if current_story and current_story.support(current_story, intent):
             return current_story
 

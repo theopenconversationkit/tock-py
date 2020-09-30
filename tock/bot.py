@@ -91,7 +91,7 @@ class TockBot:
         story_class: Type[Story] = self.__stories.find_story(Intent(request.intent), self.__context.current_story)
 
         self.__context.entities = self.__context.entities + request.entities
-        self.__context.current_story = story_class
+        self.__context.current_story = story_class.__name__
         bus = self.__bus(
             context=self.__context,
             send=lambda bot_message: messages.append(bot_message),

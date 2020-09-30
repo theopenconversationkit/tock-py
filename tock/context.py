@@ -8,8 +8,8 @@ from tock.models import Entity
 
 class Context:
 
-    def __init__(self, previous_intent: Optional[Intent] = None, current_story: Optional[Type] = None):
-        self.current_story: Optional[Type] = current_story
+    def __init__(self, previous_intent: Optional[Intent] = None, current_story: Optional[str] = None):
+        self.current_story: Optional[str] = current_story
         self.entities = []
         self.__previous_intent: Optional[Intent] = previous_intent
 
