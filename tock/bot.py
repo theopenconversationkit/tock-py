@@ -13,13 +13,14 @@
 
 """
 import logging
+
 from datetime import datetime
 from typing import Callable, Type, List
 
 import asyncio
 
 from tock.bus import TockBotBus, BotBus
-from tock.context import Contexts, Context
+from tock.context import Contexts, Context, MemoryContexts
 from tock.intent import IntentName, Intent
 from tock.models import TockMessage, BotRequest, BotMessage, BotResponse, ResponseContext
 from tock.schemas import TockMessageSchema
@@ -36,10 +37,15 @@ class TockBot:
         self.__bus = TockBotBus
         self.__stories = Stories()
         self.__error_handler: Callable = lambda bus: bus.send("Default error handler")
-        self.__contexts = Contexts()
+        self.__contexts: Contexts = MemoryContexts()
+
 
     def namespace(self, namespace: str):
         self.__namespace = namespace
+        return self
+
+    def use_contexts(self, contexts: Contexts):
+        self.__contexts = contexts
         return self
 
     def register_bus(self, bus: BotBus):
@@ -91,13 +97,10 @@ class TockBot:
         current_user_id = request.context.user_id
 
         context = self.__contexts.getcontext(current_user_id)
-        if context is None:
-            context = Context(current_user_id)
-            self.__contexts.registercontext(context)
         context.add_entities(request.entities)
 
         story_class: Type[Story] = self.__stories.find_story(Intent(request.intent), context.current_story)
-        context.previous_intent = request.intent
+        context.previous_intent = Intent(request.intent)
         context.current_story = story_class
 
         bus = self.__bus(
@@ -105,7 +108,6 @@ class TockBot:
             send=lambda bot_message: messages.append(bot_message),
             request=request
         )
-
         if story_class is not None:
             self.__logger.info("story found %s for intent %s", story_class.__name__, request.intent)
             story = self.__create(story_class, bus)
@@ -115,9 +117,9 @@ class TockBot:
 
         try:
             story.answer(bus)
+
         except:
             self.__logger.exception("Unexpected error")
-
         response = TockMessage(
             bot_response=BotResponse(
                 messages=messages,
@@ -132,6 +134,8 @@ class TockBot:
             request_id=tock_message.request_id,
         )
         tock_response: str = TockMessageSchema().dumps(response)
+        self.__contexts.save(context)
+
         return tock_response
 
     def __create(self, story_class: Type[Story], bus: BotBus):
