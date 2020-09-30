@@ -95,3 +95,24 @@ Install tock-py on your project
             .add_card(card)
             .build()
     )
+# Persistence
+
+There is a process to save the context of the current user.
+
+By default the context is saved in memory. 
+The corresponding function is in the file tock-py/tock/context/memory.py
+
+It can also be saved in a binary file through the python method "pickle".
+The corresponding function is in the file tock-py/tock/context/file.py
+
+It's possible to choose the directory that will contain the file, if it doesn't exist
+the program will create it.
+
+It's also possible to implement an other way of backup thanks to architecture of the code.
+The different way of backup are concrete class which inherits from one abstract class.
+
+
+
+
+
+
