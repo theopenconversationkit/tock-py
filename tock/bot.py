@@ -12,18 +12,20 @@
     >>> TockBot().namespace("my-bot").start_websocket(apikey=os.environ['TOCK_APIKEY'])
 
 """
+import abc
+
 import asyncio
 import logging
 from datetime import datetime
-from typing import Callable, Type, List
+from typing import Callable, Type, List, Any
 
 from tock.bus import TockBotBus, BotBus
-from tock.context.contexts import Contexts
-from tock.context.memory import MemoryContexts
-from tock.intent import IntentName, Intent
-from tock.models import TockMessage, BotRequest, BotMessage, BotResponse, ResponseContext
-from tock.schemas import TockMessageSchema
-from tock.story import Story, ErrorStory, Stories, story
+from tock.context.botstorage import BotStorage
+from tock.context.memory import MemoryStorage
+from tock.intent import Intent
+from tock.models import TockMessage, BotRequest, BotMessage, \
+    BotResponse, ResponseContext, IntentName, ClientConfiguration
+from tock.story import Story, StoryDefinitions, story as story_decorator, unknown
 from tock.webhook import TockWebhook
 from tock.websocket import TockWebsocket
 
@@ -33,36 +35,43 @@ class TockBot:
     def __init__(self):
         self.__logger: logging.Logger = logging.getLogger(__name__)
         self.__namespace: str = "default"
-        self.__bus = TockBotBus
-        self.__stories = Stories()
-        self.__error_handler: Callable = lambda bus: bus.send("Default error handler")
-        self.__contexts: Contexts = MemoryContexts()
+        self.__bus: Type[TockBotBus] = TockBotBus
+        self.__story_definitions: StoryDefinitions = StoryDefinitions()
+        self.__bot_storage: BotStorage = MemoryStorage()
 
-    def namespace(self, namespace: str):
-        self.__namespace = namespace
-        return self
-
-    def use_contexts(self, contexts: Contexts):
-        self.__contexts = contexts
-        return self
-
-    def register_bus(self, bus: BotBus):
-        self.__bus = bus
-        return self
-
-    def error_handler(self, handler: Callable):
-        self.__error_handler = handler
-        return self
-
-    def add_story(self, intent_name: IntentName, answer: Callable):
-        story_class: Type[Story] = story(intent_name)(answer)()
-
+    def __add_story(self, intent_name: IntentName, answer: Callable) -> 'TockBot':
+        story_class: Type[Story] = story_decorator(intent_name)(answer)()
         self.register_story(story_class)
         return self
 
-    def register_story(self, story: Type[Story]):
-        self.__stories.register_story(story)
+    def namespace(self, namespace: str) -> 'TockBot':
+        self.__namespace = namespace
         return self
+
+    def use_contexts(self, bot_storage: BotStorage) -> 'TockBot':
+        self.__bot_storage = bot_storage
+        return self
+
+    def register_bus(self, bus: Type[BotBus]) -> 'TockBot':
+        self.__bus = bus
+        return self
+
+    def register_story(self, story: Any) -> 'TockBot':
+        if type(story) == abc.ABCMeta:
+            self.__story_definitions.register_story(story)
+        elif story.__name__ == "provide_story_type":
+            self.__story_definitions.register_story(story())
+        else:
+            self.__add_story(story.__name__, story)
+        return self
+
+    def register_stories(self, *stories: Any) -> 'TockBot':
+        for story in stories:
+            self.register_story(story)
+        return self
+
+    def client_configuration(self) -> ClientConfiguration:
+        return self.__story_definitions.client_configuration()
 
     def start_webhook(self,
                       host: str,
@@ -87,17 +96,18 @@ class TockBot:
             port=port,
             protocol=protocol,
             bot_handler=self.__bot_handler
-        ).start())
+        ).start(self.client_configuration()))
 
-    def __bot_handler(self, tock_message: TockMessage) -> str:
+    def __bot_handler(self, tock_message: TockMessage) -> TockMessage:
+        self.__logger.debug(f"receive tock_message {tock_message}")
         messages: List[BotMessage] = []
         request: BotRequest = tock_message.bot_request
         current_user_id = request.context.user_id
 
-        context = self.__contexts.getcontext(current_user_id)
-        context.add_entities(request.entities)
+        context = self.__bot_storage.getcontext(current_user_id)
+        context.set_entities(request.entities)
 
-        story_class: Type[Story] = self.__stories.find_story(Intent(request.intent), context.current_story)
+        story_type: Type[Story] = self.__story_definitions.find_story(Intent(request.intent), context.current_story)
         context.previous_intent = Intent(request.intent)
 
         bus = self.__bus(
@@ -106,38 +116,40 @@ class TockBot:
             request=request
         )
 
-        if story_class is not None:
-            story_name: str = story_class.__name__
+        if story_type is not None:
+            story_name: str = story_type.configuration().name
             self.__logger.info("story found %s for intent %s", story_name, request.intent)
             context.current_story = story_name
-            story = self.__create(story_class, bus)
         else:
             self.__logger.info("No story for intent %s", request.intent)
-            story = ErrorStory(request=request, answer=self.__error_handler)
+            story_type = unknown()
+
+        story_instance: Story = self.__create(story_type, bus)
 
         try:
-            story.answer(bus)
+            story_instance.answer(bus)
         except:
             self.__logger.exception("Unexpected error")
 
         response = TockMessage(
             bot_response=BotResponse(
                 messages=messages,
-                story_id="story_id",
+                story_id=story_instance.configuration().name,
                 step=None,
                 context=ResponseContext(
                     request_id=tock_message.request_id,
                     date=datetime.now()
                 ),
-                entities=[]
+                entities=request.entities
             ),
             request_id=tock_message.request_id,
         )
-        tock_response: str = TockMessageSchema().dumps(response)
-        self.__contexts.save(context)
-        return tock_response
+        self.__logger.debug(f"send tock_message {response}")
+        self.__bot_storage.save(context)
+        return response
 
-    def __create(self, story_class: Type[Story], bus: BotBus):
+    @staticmethod
+    def __create(story_class: Type[Story], bus: BotBus):
         story = story_class(request=bus.request)
         for entity in bus.context.entities:
             entity_type = entity.type.split(":")[1]

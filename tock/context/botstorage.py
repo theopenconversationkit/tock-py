@@ -5,7 +5,7 @@ from tock.context.context import Context
 from tock.models import UserId
 
 
-class Contexts(ABC):
+class BotStorage(ABC):
 
     @abstractmethod
     def getcontext(self, user_id: UserId):

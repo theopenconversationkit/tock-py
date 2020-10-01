@@ -4,13 +4,16 @@ import unittest
 from datetime import datetime
 from unittest import TestCase
 
-from tock.models import ConnectorType, Entity, Message, UserId, User, RequestContext, PlayerType, Suggestion, I18nText, \
-    Sentence, \
-    ResponseContext, BotRequest, BotResponse, TockMessage, Card, Attachment, AttachmentType, Action, Carousel
+from tock.models import ConnectorType, Entity, Message, UserId, \
+    User, RequestContext, PlayerType, Suggestion, I18nText, \
+    Sentence, ResponseContext, BotRequest, BotResponse, \
+    TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
+    ClientConfiguration, StoryConfiguration
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, \
     I18nTextSchema, ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
-    CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema
+    CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
+    StoryConfigurationSchema
 
 
 def given_bot_request() -> BotRequest:
@@ -202,6 +205,16 @@ def given_tock_message() -> TockMessage:
     )
 
 
+def given_story_configuration() -> StoryConfiguration:
+    return StoryConfiguration(
+        main_intent="main_intent",
+        name="name",
+        other_starter_intents=["secondary_intent_1", "secondary_intent_2"],
+        secondary_intents=["other_start_intent_1", "other_start_intent_2"],
+        steps=[]
+    )
+
+
 class TestEntitySchema(TestCase):
     def test_json_serialization(self):
         expected = given_entity()
@@ -348,6 +361,28 @@ class TestTockMessageSchema(TestCase):
     def test_json_serialization(self):
         expected = given_tock_message()
         schema = TockMessageSchema()
+        dumps = schema.dumps(expected)
+        print(dumps)
+        result: TockMessage = schema.load(json.loads(dumps))
+        self.assertEqual(expected, result)
+
+
+class TestStoryConfigurationSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_story_configuration()
+        schema = StoryConfigurationSchema()
+        result: TockMessage = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestClientConfigurationSchema(TestCase):
+    def test_json_serialization(self):
+        expected = ClientConfiguration(
+            stories=[
+                given_story_configuration()
+            ]
+        )
+        schema = ClientConfigurationSchema()
         result: TockMessage = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)
 

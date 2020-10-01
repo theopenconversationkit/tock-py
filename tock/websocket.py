@@ -7,7 +7,7 @@ from typing import Callable
 
 import aiohttp
 
-from tock.models import TockMessage
+from tock.models import TockMessage, ClientConfiguration
 from tock.schemas import TockMessageSchema
 
 
@@ -31,17 +31,19 @@ class TockWebsocket:
         self.__bot_handler = bot_handler
         self.__logger = logging.getLogger(__name__)
 
-    async def start(self):
+    async def start(self, client_configuration: ClientConfiguration):
         self.__logger.info("started")
         session = aiohttp.ClientSession()
         async with session.ws_connect(f'{self.__protocol}://{self.__host}:{self.__port}/{self.__apikey}') as ws:
+            await self.send_bot_configuration(client_configuration, ws)
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     try:
-                        self.__logger.debug("new event received : " + msg.data)
-                        tock_message: TockMessage = TockMessageSchema().load(json.loads(msg.data))
-                        tock_response = self.__bot_handler(tock_message)
-                        self.__logger.debug("new event sent : " + tock_response)
+                        self.__logger.debug(f"new event received {msg.data}")
+                        tock_message_schema = TockMessageSchema()
+                        tock_request: TockMessage = tock_message_schema.load(json.loads(msg.data))
+                        tock_response = tock_message_schema.dumps(self.__bot_handler(tock_request))
+                        self.__logger.debug(f"new event sent : {tock_response}")
                         await ws.send_str(tock_response)
                     except JSONDecodeError:
                         e = sys.exc_info()[0]
@@ -53,3 +55,10 @@ class TockWebsocket:
                 elif msg.type == aiohttp.WSMsgType.ERROR:
                     self.__logger.error(msg.data)
                     break
+
+    async def send_bot_configuration(self, client_configuration, ws):
+        tock_message_schema = TockMessageSchema()
+        tock_message = TockMessage(bot_configuration=client_configuration)
+        bot_configuration: str = tock_message_schema.dumps(tock_message)
+        self.__logger.debug(f"bot configuration sent {bot_configuration}")
+        await ws.send_str(bot_configuration)
