@@ -96,23 +96,142 @@ Install tock-py on your project
             .build()
     )
 # Persistence
+It's possible to persist  the context of current_user which is show in this class :
 
-There is a process to save the context of the current user.
+    class Context:
 
-By default the context is saved in memory. 
+    def __init__(self,
+                 user_id: UserId,
+                 current_story: Optional[str] = None,
+                 previous_intent: Optional[Intent] = None,
+                 entities: List[Entity] = []):
+        self.__current_story: Optional[str] = current_story
+        self.__previous_intent: Optional[Intent] = previous_intent
+        self.__entities = entities
+        self.__user_id: UserId = user_id
+
+    def entity(self, entity_type: str) -> Optional[Entity]:
+        for entity in reversed(self.entities):
+            parts = split(':', entity.type)
+            parts.reverse()
+            if parts[0] == entity_type:
+                return entity
+
+    @property
+    def current_story(self):
+        return self.__current_story
+
+    @current_story.setter
+    def current_story(self, story: str):
+        self.__current_story = story
+
+    @property
+    def previous_intent(self):
+        return self.__previous_intent
+
+    @previous_intent.setter
+    def previous_intent(self, intent: Intent):
+        self.__previous_intent = intent
+
+    @property
+    def user_id(self):
+        return self.__user_id
+
+    def add_entities(self, entities: List[Entity]):
+        self.__entities = self.__entities + entities
+
+    @property
+    def entities(self):
+        return self.__entities
+
+The persistence method which is named "use_contexts" is called in the file test.py :
+
+    bot: tock.bot.TockBot = tock.bot.TockBot() \
+    .namespace(namespace) \
+    .use_contexts(FileContexts("./tmp/toto")) \
+    .register_bus(DemoBotBus) \
+    .register_story(GreetingStory) \
+    .register_story(culture()) \
+    .add_story('goodbye', goodbye) \
+    .error_handler(error)
+
+She is declared in the file bot.py :
+    
+     def use_contexts(self, contexts: Contexts):
+        self.__contexts = contexts
+        return self
+
+The persistence process propose different ways to **save** the context of the current user.
+
+1.**In Memory**
+
+By default the context is saved in memory, so if  the bot is stopped, the context will be lost. 
 The corresponding function is in the file tock-py/tock/context/memory.py
+   
+    class MemoryContexts(Contexts):
+    def __init__(self):
+        self.__contexts: List[Context] = []
 
-It can also be saved in a binary file through the python method "pickle".
-The corresponding function is in the file tock-py/tock/context/file.py
+    def getcontext(self, user_id: UserId) -> Context:
+        for context in self.__contexts:
+            if context.user_id == user_id:
+                return context
+
+        return Context(user_id)
+
+    def save(self, context: Context):
+        for item in self.__contexts:
+            if item.user_id == context.user_id:
+                self.__contexts.remove(item)
+        self.__contexts.append(context)
+
+2.**In a File**
+
+It can also be saved in a binary file through the python method **"pickle"**.
+More informations about pickle here : https://docs.python.org/3/library/pickle.html .
+
+The corresponding function is in the file tock-py/tock/context/file.py :
+
+    class FileContexts(Contexts):
+    def __init__(self, basepath: str = './'):
+        self.__basepath = basepath
+
+    def getcontext(self, user_id: UserId) -> Context:
+        filename = self.__filename(user_id)
+        if os.path.isfile(filename):
+            with open(filename, 'rb') as f:
+                context = pickle.load(f)
+            return context
+        else:
+            return Context(user_id)
+
+    def save(self, context: Context):
+        if not os.path.exists(self.__basepath):
+            os.makedirs(self.__basepath)
+        user_file = self.__filename(context.user_id)
+        with open(user_file, "wb") as f:
+            pickle.dump(context, f)
+
+    def __filename(self, user_id: UserId):
+        return self.__basepath + '/' + user_id.id + '.pkl'
 
 It's possible to choose the directory that will contain the file, if it doesn't exist
-the program will create it.
+the program will create it thanks to this part of code :
+            
+            if not os.path.exists(self.__basepath):
+            os.makedirs(self.__basepath)
+It's also possible to implement an other way of backup, for example a data base.
+It's possible thanks to architecture of the code: the different ways of saving are  concrete classes which inherits from one abstract class which is :
 
-It's also possible to implement an other way of backup thanks to architecture of the code.
-The different way of backup are concrete class which inherits from one abstract class.
+    
+    class Contexts(ABC):
 
+    @abstractmethod
+    def getcontext(self, user_id: UserId):
+        pass
 
-
-
+    @abstractmethod
+    def save(self, context: Context):
+        pass
 
 
