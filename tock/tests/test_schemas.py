@@ -10,8 +10,8 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
     ClientConfiguration, StoryConfiguration
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
-    RequestContextSchema, SuggestionSchema, \
-    I18nTextSchema, ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
+    RequestContextSchema, SuggestionSchema, I18NTextSchema, \
+    ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
     StoryConfigurationSchema
 
@@ -274,7 +274,7 @@ class TestSuggestionSchema(TestCase):
 class TestI18nTextSchema(TestCase):
     def test_json_serialization(self):
         expected = given_i18n_text()
-        schema = I18nTextSchema()
+        schema = I18NTextSchema()
         result: I18nText = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)
 
@@ -384,6 +384,14 @@ class TestClientConfigurationSchema(TestCase):
         )
         schema = ClientConfigurationSchema()
         result: TockMessage = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+    def test_payload(self):
+
+        expected = '{"botRequest": {"intent": "greetings", "entities": [], "message": {"type": "text", "text": "yo"}, "storyId": "tock_unknown_story", "context": {"namespace": "elebescond", "language": "fr", "connectorType": {"id": "web", "userInterfaceType": "textChat"}, "userInterface": "textChat", "applicationId": "test-erwan_assistant", "userId": {"id": "test_5dcae4ec816a555b46a4857f_fr__sjniho739", "type": "user"}, "botId": {"id": "test_bot_5dcae4ec816a555b46a4857f_fr", "type": "bot"}, "user": {"timezone": "UTC", "locale": "fr", "test": false}}}, "requestId": "5f788c08c93772446f21d05f"}'
+        schema = TockMessageSchema()
+        loads: TockMessage = schema.loads(expected)
+        result = schema.dumps(loads)
         self.assertEqual(expected, result)
 
 

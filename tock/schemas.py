@@ -11,16 +11,16 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     StepConfiguration, ClientConfiguration
 
 
+def camelcase(s):
+    parts = iter(s.split("_"))
+    return next(parts) + "".join(i.title() for i in parts)
+
+
 class TockSchema(Schema):
     SKIP_VALUES = {None}
 
-    @staticmethod
-    def _camelcase(s) -> str:
-        parts = iter(s.split("_"))
-        return next(parts) + "".join(i.title() for i in parts)
-
-    def _on_bind_field(self, field_name, field_obj):
-        field_obj.data_key = self._camelcase(field_obj.data_key or field_name)
+    def on_bind_field(self, field_name, field_obj):
+        field_obj.data_key = camelcase(field_obj.data_key or field_name)
 
     @post_dump
     def remove_skip_values(self, data, many, **kwargs):
@@ -33,6 +33,7 @@ class TockSchema(Schema):
     class Meta:
         unknown = EXCLUDE
         datetimeformat = '%Y-%m-%dT%H:%M:%SZ'
+        ordered = True
 
 
 class EntitySchema(TockSchema):
@@ -102,7 +103,7 @@ class RequestContextSchema(TockSchema):
         return RequestContext(**data)
 
 
-class I18nTextSchema(TockSchema):
+class I18NTextSchema(TockSchema):
     text = fields.String(required=True)
     args = fields.List(fields.String, required=True)
     to_be_translated = fields.Boolean(required=True)
@@ -115,7 +116,7 @@ class I18nTextSchema(TockSchema):
 
 
 class SuggestionSchema(TockSchema):
-    title = fields.Nested(I18nTextSchema, required=True)
+    title = fields.Nested(I18NTextSchema, required=True)
 
     @post_load
     def make_suggestion(self, data, **kwargs):
@@ -132,7 +133,7 @@ class AttachmentSchema(TockSchema):
 
 
 class ActionSchema(TockSchema):
-    title = fields.Nested(I18nTextSchema)
+    title = fields.Nested(I18NTextSchema)
     url = fields.String(required=False)
 
     @post_load
@@ -145,7 +146,7 @@ class BotMessageSchema(TockSchema):
 
 
 class SentenceSchema(BotMessageSchema):
-    text = fields.Nested(I18nTextSchema)
+    text = fields.Nested(I18NTextSchema)
     suggestions = fields.List(fields.Nested(SuggestionSchema), required=True)
 
     @post_load
@@ -154,8 +155,8 @@ class SentenceSchema(BotMessageSchema):
 
 
 class CardSchema(BotMessageSchema):
-    title = fields.Nested(I18nTextSchema, required=False)
-    sub_title = fields.Nested(I18nTextSchema, required=False)
+    title = fields.Nested(I18NTextSchema, required=False)
+    sub_title = fields.Nested(I18NTextSchema, required=False)
     attachment = fields.Nested(AttachmentSchema, required=False)
     actions = fields.List(fields.Nested(ActionSchema), required=True)
 

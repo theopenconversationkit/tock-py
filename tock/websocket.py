@@ -43,7 +43,7 @@ class TockWebsocket:
                     try:
                         self.__logger.debug(f"new event received {msg.data}")
                         tock_message_schema = TockMessageSchema()
-                        tock_request: TockMessage = tock_message_schema.load(json.loads(msg.data))
+                        tock_request: TockMessage = tock_message_schema.loads(msg.data)
                         tock_response = tock_message_schema.dumps(self.__bot_handler(tock_request))
                         self.__logger.debug(f"new event sent : {tock_response}")
                         await ws.send_str(tock_response)
