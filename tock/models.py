@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 import abc
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Union, Optional
-
-from tock.intent import IntentName
+from typing import List, Optional, Any
 
 
 class PlayerType(Enum):
     USER = "user"
     BOT = "bot"
+
+
+IntentName = str
 
 
 @dataclass
@@ -102,7 +104,7 @@ class Sentence(BotMessage):
             self.__suggestions = []
             self.__delay = 0
 
-        def with_text(self, text: Union[str, I18nText]):
+        def with_text(self, text: Any):
             if isinstance(text, I18nText):
                 self.__text = text
             else:
@@ -190,7 +192,7 @@ class Card(BotMessage):
             self.__actions: List[Action] = []
             self.__delay = 0
 
-        def with_title(self, title: Union[str, I18nText]):
+        def with_title(self, title: Any):
             if isinstance(title, I18nText):
                 self.__title = title
             else:
@@ -202,7 +204,7 @@ class Card(BotMessage):
                 )
             return self
 
-        def with_sub_title(self, sub_title: Union[str, I18nText]):
+        def with_sub_title(self, sub_title: Any):
             if isinstance(sub_title, I18nText):
                 self.__sub_title = sub_title
             else:
@@ -218,7 +220,7 @@ class Card(BotMessage):
             self.__attachment = Attachment(url, type)
             return self
 
-        def add_action(self, title: Union[str, I18nText], url: Optional[str] = None):
+        def add_action(self, title: Any, url: Optional[str] = None):
             if not isinstance(title, I18nText):
                 title = I18nText(
                     text=title,
@@ -294,7 +296,30 @@ class BotResponse:
 
 
 @dataclass
+class StepConfiguration:
+    main_intent: IntentName
+    name: str
+    other_starter_intents: List[IntentName]
+    secondary_intents: List[IntentName]
+
+
+@dataclass
+class StoryConfiguration:
+    main_intent: IntentName
+    name: str
+    other_starter_intents: List[IntentName]
+    secondary_intents: List[IntentName]
+    steps: List[StepConfiguration]
+
+
+@dataclass
+class ClientConfiguration:
+    stories: List[StoryConfiguration]
+
+
+@dataclass
 class TockMessage:
-    request_id: str
+    request_id: str = uuid.uuid4()
+    bot_configuration: ClientConfiguration = None
     bot_request: BotRequest = None
     bot_response: BotResponse = None

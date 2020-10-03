@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from typing import List
 
+from tock.context.botstorage import BotStorage
 from tock.context.context import Context
-from tock.context.contexts import Contexts
 from tock.models import UserId
 
 
-class MemoryContexts(Contexts):
+class MemoryStorage(BotStorage):
     def __init__(self):
         self.__contexts: List[Context] = []
 
@@ -22,4 +22,3 @@ class MemoryContexts(Contexts):
             if item.user_id == context.user_id:
                 self.__contexts.remove(item)
         self.__contexts.append(context)
-        

@@ -12,7 +12,9 @@ class Context:
                  user_id: UserId,
                  current_story: Optional[str] = None,
                  previous_intent: Optional[Intent] = None,
-                 entities: List[Entity] = []):
+                 entities: List[Entity] = None):
+        if entities is None:
+            entities = []
         self.__current_story: Optional[str] = current_story
         self.__previous_intent: Optional[Intent] = previous_intent
         self.__entities = entities
@@ -47,6 +49,12 @@ class Context:
 
     def add_entities(self, entities: List[Entity]):
         self.__entities = self.__entities + entities
+
+    def set_entities(self, entities: List[Entity]):
+        self.__entities = entities
+
+    def reset_entities(self):
+        self.__entities = []
 
     @property
     def entities(self):

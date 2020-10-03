@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import abc
-from typing import Callable, List, Union
+import logging
+from typing import Callable, List, Any
 
 from tock.context.context import Context
-from tock.intent import Intent, IntentName
-from tock.models import BotMessage, BotRequest, Entity, Sentence
+from tock.intent import Intent
+from tock.models import BotMessage, BotRequest, Entity, Sentence, IntentName
 
 
 class BotBus(abc.ABC):
@@ -44,14 +45,19 @@ class TockBotBus(BotBus):
                  send: Callable,
                  request: BotRequest
                  ):
+        self.__logger: logging.Logger = logging.getLogger(__name__)
         self.__context = context
         self.__send = send
         self.__request = request
 
-    def send(self, message: Union[str, BotMessage]):
+    def send(self, message: Any):
         if type(message) == str:
             message = Sentence.Builder(message).build()
-        self.__send(message)
+        if issubclass(message.__class__, BotMessage):
+            self.__send(message)
+        else:
+            self.__logger.error(f"Unable to send {message}. The type provided is not correct {type(message)}. "
+                                "Only str and BotMessage are supported")
 
     @property
     def context(self):
@@ -68,7 +74,7 @@ class TockBotBus(BotBus):
     def entity(self, entity_type: str) -> Entity:
         return self.context.entity(entity_type)
 
-    def is_intent(self, intents: Union[IntentName, Intent, List[IntentName], List[Intent]]) -> bool:
+    def is_intent(self, intents: Any) -> bool:
         if type(intents) == IntentName:
             intents = [Intent(intents)]
         elif type(intents) == Intent:
