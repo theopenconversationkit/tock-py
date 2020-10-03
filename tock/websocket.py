@@ -22,20 +22,22 @@ class TockWebsocket:
             host: str = "demo-bot.tock.ai",
             port: int = 443,
             protocol: str = "wss",
+            client_configuration: ClientConfiguration = None,
             bot_handler: Callable = lambda text: None
     ):
         self.__apikey = apikey
         self.__host = host
         self.__port = port
         self.__protocol = protocol
+        self.__client_configuration = client_configuration
         self.__bot_handler = bot_handler
         self.__logger = logging.getLogger(__name__)
 
-    async def start(self, client_configuration: ClientConfiguration):
+    async def start(self):
         self.__logger.info("started")
         session = aiohttp.ClientSession()
         async with session.ws_connect(f'{self.__protocol}://{self.__host}:{self.__port}/{self.__apikey}') as ws:
-            await self.send_bot_configuration(client_configuration, ws)
+            await self.__send_bot_configuration(self.__client_configuration, ws)
             async for msg in ws:
                 if msg.type == aiohttp.WSMsgType.TEXT:
                     try:
@@ -56,7 +58,7 @@ class TockWebsocket:
                     self.__logger.error(msg.data)
                     break
 
-    async def send_bot_configuration(self, client_configuration, ws):
+    async def __send_bot_configuration(self, client_configuration, ws):
         tock_message_schema = TockMessageSchema()
         tock_message = TockMessage(bot_configuration=client_configuration)
         bot_configuration: str = tock_message_schema.dumps(tock_message)

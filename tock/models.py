@@ -320,6 +320,7 @@ class ClientConfiguration:
 @dataclass
 class TockMessage:
     request_id: str = uuid.uuid4()
-    bot_configuration: ClientConfiguration = None
-    bot_request: BotRequest = None
-    bot_response: BotResponse = None
+    configuration: Optional[bool] = None
+    bot_configuration: Optional[ClientConfiguration] = None
+    bot_request: Optional[BotRequest] = None
+    bot_response: Optional[BotResponse] = None

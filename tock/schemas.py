@@ -266,6 +266,7 @@ class TockMessageSchema(TockSchema):
     bot_request = fields.Nested(BotRequestSchema, required=False)
     bot_response = fields.Nested(BotResponseSchema, required=False)
     bot_configuration = fields.Nested(ClientConfigurationSchema, required=False)
+    configuration = fields.Boolean(required=False)
     request_id = fields.String(required=True)
 
     @post_load

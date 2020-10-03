@@ -13,11 +13,11 @@
 
 """
 import abc
-
-import asyncio
 import logging
 from datetime import datetime
 from typing import Callable, Type, List, Any
+
+import asyncio
 
 from tock.bus import TockBotBus, BotBus
 from tock.context.botstorage import BotStorage
@@ -81,6 +81,7 @@ class TockBot:
             host=host,
             path=path,
             port=port,
+            client_configuration=self.client_configuration(),
             bot_handler=self.__bot_handler
         ).start()
 
@@ -95,8 +96,9 @@ class TockBot:
             host=host,
             port=port,
             protocol=protocol,
+            client_configuration=self.client_configuration(),
             bot_handler=self.__bot_handler
-        ).start(self.client_configuration()))
+        ).start())
 
     def __bot_handler(self, tock_message: TockMessage) -> TockMessage:
         self.__logger.debug(f"receive tock_message {tock_message}")

@@ -50,10 +50,22 @@ Install tock-py on your project
     def greetings(bus: TockBotBus):
         bus.send("Hello i'm a tock-py bot")
     
+    # If decorator @story is not provided, the intention with the function name is user
+    def goodbye(bus: TockBotBus):
+        bus.send("Hello i'm a tock-py bot")
+    
     # Configure your bot and start it
     TockBot() \
-        .register_story(greetings()) \
+        .register_story(greetings) \
+        .register_story(goodbye) \
         .start_websocket(apikey=os.environ['TOCK_APIKEY'])
+
+
+    # You can also use webhook mode
+    # TockBot() \
+    #     .register_story(greetings) \
+    #     .register_story(goodbye) \
+    #     .start_webhook("0.0.0.0", "tock-py", 5000)
 
 # Sentence
 
@@ -87,6 +99,7 @@ Install tock-py on your project
         .with_attachment("https://www.sncf.com/themes/sncfcom/img/favicon.png", AttachmentType.IMAGE) \
         .add_action("visit", "http://www.sncf.com") \
         .build()
+        
     bus.send(
         Carousel
             .Builder()
