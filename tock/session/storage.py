@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 from abc import ABC, abstractmethod
 
-from tock.context.context import Context
+from tock.session.session import Session
 from tock.models import UserId
 
 
-class BotStorage(ABC):
+class Storage(ABC):
 
     @abstractmethod
-    def getcontext(self, user_id: UserId):
+    def get_session(self, user_id: UserId):
         pass
 
     @abstractmethod
-    def save(self, context: Context):
+    def save(self, session: Session):
         pass
