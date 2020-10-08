@@ -20,8 +20,8 @@ from typing import Callable, Type, List, Any
 import asyncio
 
 from tock.bus import TockBotBus, BotBus
-from tock.context.botstorage import BotStorage
-from tock.context.memory import MemoryStorage
+from tock.session.storage import Storage
+from tock.session.memory import MemoryStorage
 from tock.intent import Intent
 from tock.models import TockMessage, BotRequest, BotMessage, \
     BotResponse, ResponseContext, IntentName, ClientConfiguration
@@ -37,7 +37,7 @@ class TockBot:
         self.__namespace: str = "default"
         self.__bus: Type[TockBotBus] = TockBotBus
         self.__story_definitions: StoryDefinitions = StoryDefinitions()
-        self.__bot_storage: BotStorage = MemoryStorage()
+        self.__bot_storage: Storage = MemoryStorage()
 
     def __add_story(self, intent_name: IntentName, answer: Callable) -> 'TockBot':
         story_class: Type[Story] = story_decorator(intent_name)(answer)()
@@ -48,8 +48,8 @@ class TockBot:
         self.__namespace = namespace
         return self
 
-    def use_contexts(self, bot_storage: BotStorage) -> 'TockBot':
-        self.__bot_storage = bot_storage
+    def use_storage(self, storage: Storage) -> 'TockBot':
+        self.__bot_storage = storage
         return self
 
     def register_bus(self, bus: Type[BotBus]) -> 'TockBot':
@@ -106,14 +106,14 @@ class TockBot:
         request: BotRequest = tock_message.bot_request
         current_user_id = request.context.user_id
 
-        context = self.__bot_storage.getcontext(current_user_id)
-        context.set_entities(request.entities)
+        session = self.__bot_storage.get_session(current_user_id)
+        session.set_entities(request.entities)
 
-        story_type: Type[Story] = self.__story_definitions.find_story(Intent(request.intent), context.current_story)
-        context.previous_intent = Intent(request.intent)
+        story_type: Type[Story] = self.__story_definitions.find_story(Intent(request.intent), session.current_story)
+        session.previous_intent = Intent(request.intent)
 
         bus = self.__bus(
-            context=context,
+            session=session,
             send=lambda bot_message: messages.append(bot_message),
             request=request
         )
@@ -121,7 +121,7 @@ class TockBot:
         if story_type is not None:
             story_name: str = story_type.configuration().name
             self.__logger.info("story found %s for intent %s", story_name, request.intent)
-            context.current_story = story_name
+            session.current_story = story_name
         else:
             self.__logger.info("No story for intent %s", request.intent)
             story_type = unknown()
@@ -147,13 +147,13 @@ class TockBot:
             request_id=tock_message.request_id,
         )
         self.__logger.debug(f"send tock_message {response}")
-        self.__bot_storage.save(context)
+        self.__bot_storage.save(session)
         return response
 
     @staticmethod
     def __create(story_class: Type[Story], bus: BotBus):
         story = story_class(request=bus.request)
-        for entity in bus.context.entities:
+        for entity in bus.session.entities:
             entity_type = entity.type.split(":")[1]
             if hasattr(story, entity_type):
                 setattr(

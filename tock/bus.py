@@ -3,7 +3,7 @@ import abc
 import logging
 from typing import Callable, List, Any
 
-from tock.context.context import Context
+from tock.session.session import Session
 from tock.intent import Intent
 from tock.models import BotMessage, BotRequest, Entity, Sentence, IntentName
 
@@ -16,7 +16,7 @@ class BotBus(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def context(self) -> Context:
+    def session(self) -> Session:
         pass
 
     @property
@@ -41,12 +41,12 @@ class BotBus(abc.ABC):
 class TockBotBus(BotBus):
 
     def __init__(self,
-                 context: Context,
+                 session: Session,
                  send: Callable,
                  request: BotRequest
                  ):
         self.__logger: logging.Logger = logging.getLogger(__name__)
-        self.__context = context
+        self.__session = session
         self.__send = send
         self.__request = request
 
@@ -61,7 +61,12 @@ class TockBotBus(BotBus):
 
     @property
     def context(self):
-        return self.__context
+        self.__logger.error("bus.context is deprecated since v0.0.1-dev8. You should use session()")
+        return self.session
+
+    @property
+    def session(self):
+        return self.__session
 
     @property
     def intent(self) -> Intent:
@@ -72,7 +77,7 @@ class TockBotBus(BotBus):
         return self.__request
 
     def entity(self, entity_type: str) -> Entity:
-        return self.context.entity(entity_type)
+        return self.session.entity(entity_type)
 
     def is_intent(self, intents: Any) -> bool:
         if type(intents) == IntentName:

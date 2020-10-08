@@ -6,7 +6,7 @@ from tock.intent import Intent
 from tock.models import Entity, UserId
 
 
-class Context:
+class Session:
 
     def __init__(self,
                  user_id: UserId,
