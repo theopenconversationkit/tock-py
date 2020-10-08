@@ -108,3 +108,19 @@ Install tock-py on your project
             .add_card(card)
             .build()
     )
+    
+# Custom state
+
+Your bot can store custom state data in session
+
+    def greetings(bus):
+        if bus.session.get_item("greetings_flag") is None:
+            bus.send("Welcome")
+        else:
+            bus.send("Welcome back")
+        bus.session.set_item("greetings_flag", True)
+        
+You can clear session
+
+    def goodbye(bus):
+        bus.session.clear()
