@@ -24,7 +24,7 @@ from tock.session.storage import Storage
 from tock.session.memory import MemoryStorage
 from tock.intent import Intent
 from tock.models import TockMessage, BotRequest, BotMessage, \
-    BotResponse, ResponseContext, IntentName, ClientConfiguration
+    BotResponse, ResponseContext, IntentName, ClientConfiguration, UserId
 from tock.story import Story, StoryDefinitions, story as story_decorator, unknown
 from tock.webhook import TockWebhook
 from tock.websocket import TockWebsocket
@@ -104,12 +104,12 @@ class TockBot:
         self.__logger.debug(f"receive tock_message {tock_message}")
         messages: List[BotMessage] = []
         request: BotRequest = tock_message.bot_request
-        current_user_id = request.context.user_id
+        current_user_id: UserId = request.context.user_id
 
         session = self.__bot_storage.get_session(current_user_id)
-        session.set_entities(request.entities)
+        session.entities = request.entities
 
-        story_type: Type[Story] = self.__story_definitions.find_story(Intent(request.intent), session.current_story)
+        story_type: Type[Story] = self.__story_definitions.find_story(request.story_id)
         session.previous_intent = Intent(request.intent)
 
         bus = self.__bus(

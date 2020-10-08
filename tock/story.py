@@ -81,42 +81,19 @@ def unknown(bus: TockBotBus):
 class StoryDefinitions:
 
     def __init__(self):
-        self.__story_configurations = []
-        self.__definitions_by_main_intent: Dict[Intent, Type[Story]] = {}
-        self.__definitions_by_other_starter_intents: Dict[Intent, List[Type[Story]]] = {}
-        self.__definitions_by_secondary_intents: Dict[Intent, List[Type[Story]]] = {}
+        self.__stories: List[Type[Story]] = []
 
-    def __find_story_by_name(self, story_name: str) -> Optional[Type[Story]]:
-        for story in self.__definitions_by_main_intent.values():
-            if story.configuration().name == story_name:
-                return story
+    def find_story(self, story_name: str) -> Optional[Type[Story]]:
+        for _story in self.__stories:
+            if _story.configuration().name == story_name:
+                return _story
 
     def register_story(self, story_type: Type[Story]):
 
-        self.__story_configurations.append(story_type.configuration())
-        self.__definitions_by_main_intent[story_type.intent()] = story_type
-
-        for intent in story_type.other_starter_intents():
-            if intent not in self.__definitions_by_other_starter_intents:
-                self.__definitions_by_other_starter_intents[intent] = []
-            self.__definitions_by_other_starter_intents[intent].append(story_type)
-
-        for intent in story_type.secondary_intents():
-            if intent not in self.__definitions_by_secondary_intents:
-                self.__definitions_by_secondary_intents[intent] = []
-            self.__definitions_by_secondary_intents[intent].append(story_type)
-
-    def find_story(self, intent: Intent, current_story_name: str) -> Optional[Type[Story]]:
-        current_story: Optional[Type[Story]] = self.__find_story_by_name(current_story_name)
-        if current_story and current_story.support(current_story, intent):
-            return current_story
-
-        if intent in self.__definitions_by_main_intent:
-            return self.__definitions_by_main_intent[intent]
-
-        if intent in self.__definitions_by_other_starter_intents and len(
-                self.__definitions_by_other_starter_intents[intent]) > 0:
-            return self.__definitions_by_other_starter_intents[intent][0]
+        self.__stories.append(story_type)
 
     def client_configuration(self) -> ClientConfiguration:
-        return ClientConfiguration(self.__story_configurations)
+        configurations: List[StoryConfiguration] = []
+        for _story in self.__stories:
+            configurations.append(_story.configuration())
+        return ClientConfiguration(configurations)

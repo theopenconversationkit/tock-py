@@ -8,7 +8,7 @@ from tock.models import UserId
 class Storage(ABC):
 
     @abstractmethod
-    def get_session(self, user_id: UserId):
+    def get_session(self, user_id: UserId) -> Session:
         pass
 
     @abstractmethod

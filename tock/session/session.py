@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from re import split
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from tock.intent import Intent
 from tock.models import Entity, UserId
@@ -19,6 +19,7 @@ class Session:
         self.__previous_intent: Optional[Intent] = previous_intent
         self.__entities = entities
         self.__user_id: UserId = user_id
+        self.__items = {}
 
     def entity(self, entity_type: str) -> Optional[Entity]:
         for entity in reversed(self.entities):
@@ -47,15 +48,26 @@ class Session:
     def user_id(self):
         return self.__user_id
 
-    def add_entities(self, entities: List[Entity]):
-        self.__entities = self.__entities + entities
+    @property
+    def entities(self):
+        return self.__entities
 
-    def set_entities(self, entities: List[Entity]):
+    @entities.setter
+    def entities(self, entities: List[Entity]):
         self.__entities = entities
 
     def reset_entities(self):
         self.__entities = []
 
-    @property
-    def entities(self):
-        return self.__entities
+    def add_entities(self, entities: List[Entity]):
+        self.__entities = self.__entities + entities
+
+    def set_item(self, key: str, value: Any):
+        self.__items[key] = value
+
+    def get_item(self, key: str) -> Optional[Any]:
+        if key in self.__items.keys():
+            return self.__items[key]
+
+    def clear(self):
+        self.__items = {}
