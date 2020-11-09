@@ -5,16 +5,61 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional, Any
-
-
+ 
+ 
 class PlayerType(Enum):
     USER = "user"
     BOT = "bot"
-
-
+ 
+ 
 IntentName = str
-
-
+ 
+# Entités:
+ 
+### Pas évaluée
+# "entities":
+#     [
+#         {
+#             "type":"elebescond:person",
+#             "role":"person",
+#             "content":"Mozart",
+#             "evaluated":false,
+#             "subEntities":[],
+#             "new":true
+#         }
+#     ]
+### Pas évalué
+# "entities":
+#     [
+#         {
+#             "type":"app:person",
+#             "role":"person",
+#             "content":"Mozart",
+#             "value": {
+#                 "@type": 'string', 
+#                 'value': 'perso_celebre', 
+#                 'candidates': [
+#                     'value':'perso_celebre', 
+#                     'probability': 1.0
+#                 ]
+#             }
+#             "evaluated":True,
+#             "subEntities":[],
+#             "new":true
+#         }
+#     ]
+ 
+@dataclass
+class EntityValueCandidate: 
+    value: str
+    probability: float
+ 
+@dataclass
+class EntityValue:
+    type:str
+    value:str
+    candidates: List[EntityValueCandidate]
+ 
 @dataclass
 class Entity:
     type: str
@@ -23,35 +68,36 @@ class Entity:
     sub_entities = []
     new: bool
     content: str = None
-    value: Optional[str] = None
-
-
+    value: Optional[EntityValue] = None
+    # value: Optional[str] = None  => old
+    # value: Optional[dict] = None  => works, but not pretty
+ 
 @dataclass
 class Message:
     type: str
     text: str
-
-
+ 
+ 
 @dataclass
 class ConnectorType:
     id: str
     user_interface_type: str
-
-
+ 
+ 
 @dataclass
 class UserId:
     id: str
     type: PlayerType
     client_id: Optional[str] = None
-
-
+ 
+ 
 @dataclass
 class User:
     timezone: str
     locale: str
     test: bool
-
-
+ 
+ 
 @dataclass
 class RequestContext:
     namespace: str
@@ -62,8 +108,8 @@ class RequestContext:
     user_id: UserId
     bot_id: UserId
     user: User
-
-
+ 
+ 
 @dataclass
 class I18nText:
     text: str
@@ -71,24 +117,24 @@ class I18nText:
     to_be_translated: bool
     length: int
     key: Optional[str] = None
-
-
+ 
+ 
 @dataclass
 class Suggestion:
     title: I18nText
-
-
+ 
+ 
 @dataclass
 class BotMessage(abc.ABC):
     delay: int
-
-
+ 
+ 
 @dataclass
 class Sentence(BotMessage):
     text: I18nText
     suggestions: List[Suggestion]
     delay: int
-
+ 
     def __init__(self,
                  text: I18nText,
                  suggestions: List[Suggestion],
@@ -96,14 +142,14 @@ class Sentence(BotMessage):
         self.text = text
         self.suggestions = suggestions
         super().__init__(delay)
-
+ 
     class Builder:
-
+ 
         def __init__(self, text: str):
             self.__text = text
             self.__suggestions = []
             self.__delay = 0
-
+ 
         def with_text(self, text: Any):
             if isinstance(text, I18nText):
                 self.__text = text
@@ -115,7 +161,7 @@ class Sentence(BotMessage):
                     length=len(text)
                 )
             return self
-
+ 
         def add_suggestion(self, title: str):
             self.__suggestions.append(Suggestion(
                 title=I18nText(
@@ -126,11 +172,11 @@ class Sentence(BotMessage):
                 )
             ))
             return self
-
+ 
         def with_delay(self, delay: int):
             self.__delay = delay
             return self
-
+ 
         def build(self):
             return Sentence(
                 text=I18nText(
@@ -142,27 +188,27 @@ class Sentence(BotMessage):
                 suggestions=self.__suggestions,
                 delay=self.__delay
             )
-
-
+ 
+ 
 class AttachmentType(Enum):
     IMAGE = "image"
     AUDIO = "audio"
     VIDEO = "video"
     FILE = "file"
-
-
+ 
+ 
 @dataclass
 class Attachment:
     url: str
     type: Optional[AttachmentType]
-
-
+ 
+ 
 @dataclass
 class Action:
     title: I18nText
     url: Optional[str]
-
-
+ 
+ 
 @dataclass
 class Card(BotMessage):
     title: Optional[I18nText]
@@ -170,7 +216,7 @@ class Card(BotMessage):
     attachment: Optional[Attachment]
     actions: List[Action]
     delay: int
-
+ 
     def __init__(self,
                  title: Optional[I18nText],
                  sub_title: Optional[I18nText],
@@ -182,16 +228,16 @@ class Card(BotMessage):
         self.attachment = attachment
         self.actions = actions
         super().__init__(delay)
-
+ 
     class Builder:
-
+ 
         def __init__(self):
             self.__title = None
             self.__sub_title = None
             self.__attachment = None
             self.__actions: List[Action] = []
             self.__delay = 0
-
+ 
         def with_title(self, title: Any):
             if isinstance(title, I18nText):
                 self.__title = title
@@ -203,7 +249,7 @@ class Card(BotMessage):
                     length=len(title)
                 )
             return self
-
+ 
         def with_sub_title(self, sub_title: Any):
             if isinstance(sub_title, I18nText):
                 self.__sub_title = sub_title
@@ -215,11 +261,11 @@ class Card(BotMessage):
                     length=len(sub_title)
                 )
             return self
-
+ 
         def with_attachment(self, url: str, type: AttachmentType = None):
             self.__attachment = Attachment(url, type)
             return self
-
+ 
         def add_action(self, title: Any, url: Optional[str] = None):
             if not isinstance(title, I18nText):
                 title = I18nText(
@@ -230,11 +276,11 @@ class Card(BotMessage):
                 )
             self.__actions.append(Action(title=title, url=url))
             return self
-
+ 
         def with_delay(self, delay: int):
             self.__delay = delay
             return self
-
+ 
         def build(self):
             return Card(
                 title=self.__title,
@@ -243,40 +289,40 @@ class Card(BotMessage):
                 actions=self.__actions,
                 delay=self.__delay
             )
-
-
+ 
+ 
 @dataclass
 class Carousel(BotMessage):
     cards: List[Card]
     delay: int
-
+ 
     def __init__(self, cards: List[Card], delay: int = 0):
         self.cards = cards
         super().__init__(delay)
-
+ 
     class Builder:
-
+ 
         def __init__(self):
             self.__cards: List[Card] = []
             self.__delay = 0
-
+ 
         def add_card(self, card: Card):
             self.__cards.append(card)
             return self
-
+ 
         def build(self):
             return Carousel(
                 cards=self.__cards,
                 delay=self.__delay
             )
-
-
+ 
+ 
 @dataclass
 class ResponseContext:
     request_id: str
     date: datetime
-
-
+ 
+ 
 @dataclass
 class BotRequest:
     intent: IntentName
@@ -284,8 +330,8 @@ class BotRequest:
     message: Message
     story_id: str
     context: RequestContext = None
-
-
+ 
+ 
 @dataclass
 class BotResponse:
     messages: List[BotMessage]
@@ -293,16 +339,16 @@ class BotResponse:
     step: Optional[str]
     context: ResponseContext
     entities: List[Entity]
-
-
+ 
+ 
 @dataclass
 class StepConfiguration:
     main_intent: IntentName
     name: str
     other_starter_intents: List[IntentName]
     secondary_intents: List[IntentName]
-
-
+ 
+ 
 @dataclass
 class StoryConfiguration:
     main_intent: IntentName
@@ -310,13 +356,13 @@ class StoryConfiguration:
     other_starter_intents: List[IntentName]
     secondary_intents: List[IntentName]
     steps: List[StepConfiguration]
-
-
+ 
+ 
 @dataclass
 class ClientConfiguration:
     stories: List[StoryConfiguration]
-
-
+ 
+ 
 @dataclass
 class TockMessage:
     request_id: str = uuid.uuid4()
@@ -324,3 +370,4 @@ class TockMessage:
     bot_configuration: Optional[ClientConfiguration] = None
     bot_request: Optional[BotRequest] = None
     bot_response: Optional[BotResponse] = None
+ 
