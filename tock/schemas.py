@@ -3,13 +3,12 @@ from marshmallow import Schema, fields, EXCLUDE, post_load, post_dump
 from marshmallow.fields import String
 from marshmallow_enum import EnumField
 from marshmallow_oneofschema import OneOfSchema
-from dataclasses import field
- 
+
 from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
-    Message, Entity, EntityValue, EntityValueCandidate, RequestContext, BotResponse, ResponseContext, \
+    Message, Entity, RequestContext, BotResponse, ResponseContext, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
-    StepConfiguration, ClientConfiguration
+    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate
 
 
 def camelcase(s):
@@ -37,29 +36,55 @@ class TockSchema(Schema):
         ordered = True
 
 
-class EntityValueCandidateSchema(TockSchema): 
-    value: fields.String(required=True)
-    probability: fields.Float(required=True)
+class ValueSchema(TockSchema):
+    value = fields.String(required=True)
+
+
+class CandidateSchema(TockSchema):
+    value = fields.String(required=True)
+    probability = fields.Float(required=True)
 
     @post_load
-    def make_entity_value_candidate(self, data, **kwargs): 
-        return EntityValueCandidate(**data)
+    def make_entity_value_candidate(self, data, **kwargs):
+        return Candidate(**data)
 
 
-class EntityValueSchema(TockSchema): 
-    type: fields.String(required=False)
-    value: fields.String(required=False)
-    candidates: fields.List(fields.Nested(EntityValueCandidateSchema))
+class StringValueSchema(ValueSchema):
+    candidates = fields.List(fields.Nested(CandidateSchema))
 
     @post_load
-    def make_entity_value(self, data, **kwargs): 
-        return EntityValue(**data)
+    def make_entity_value(self, data, **kwargs):
+        return StringValue(**data)
+
+
+class DurationValueSchema(ValueSchema):
+
+    @post_load
+    def make_duration_value(self, data, **kwargs) -> DurationValue:
+        return DurationValue(**data)
+
+
+class UberValueSchema(OneOfSchema):
+    type_field = "@type"
+    type_schemas = {
+        "duration": DurationValueSchema,
+        "string": StringValueSchema
+    }
+
+    def get_obj_type(self, obj):
+        if isinstance(obj, DurationValue):
+            return "duration"
+        if isinstance(obj, StringValue):
+            return "string"
+        else:
+            raise Exception("Unknown object type: {}".format(obj.__class__.__name__))
+
 
 class EntitySchema(TockSchema):
     type = fields.String(required=True)
     role = fields.String(required=True)
     content = fields.String(required=False)
-    value = fields.Nested(EntityValueSchema, requred=False)
+    value = fields.Nested(UberValueSchema, requred=False)
     evaluated = fields.Boolean(required=True)
     # subEntities = fields.List(fields.Nested(EntitySchema), required=True)
     new = fields.Boolean(required=True)
@@ -67,6 +92,7 @@ class EntitySchema(TockSchema):
     @post_load
     def make_entity(self, data, **kwargs):
         return Entity(**data)
+
 
 class MessageSchema(TockSchema):
     type = fields.String(required=True)

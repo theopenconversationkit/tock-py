@@ -4,16 +4,33 @@ import unittest
 from datetime import datetime
 from unittest import TestCase
 
-from tock.models import ConnectorType, Entity, EntityValue, EntityValueCandidate, Message, UserId, \
+from tock.models import ConnectorType, Entity, Message, UserId, \
     User, RequestContext, PlayerType, Suggestion, I18nText, \
     Sentence, ResponseContext, BotRequest, BotResponse, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
-    ClientConfiguration, StoryConfiguration
-from tock.schemas import ConnectorTypeSchema, EntitySchema, EntityValueSchema, EntityValueCandidateSchema, MessageSchema, UserIdSchema, UserSchema, \
+    ClientConfiguration, StoryConfiguration, Value, Candidate, StringValue, DurationValue
+from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
-    StoryConfigurationSchema
+    StoryConfigurationSchema, DurationValueSchema, UberValueSchema, StringValueSchema
+
+
+def given_duration_value() -> DurationValue:
+    return DurationValue(
+        value="PT15M"
+    )
+
+
+def given_string_value() -> StringValue:
+    return StringValue(
+        value='value',
+        candidates=[
+            Candidate(
+                value='value',
+                probability=1.0
+            )
+        ])
 
 
 def given_bot_request() -> BotRequest:
@@ -26,14 +43,7 @@ def given_bot_request() -> BotRequest:
                 evaluated=True,
                 new=False,
                 content="content",
-                value=EntityValue(
-                    type='type', 
-                    value='value', 
-                    candidates=EntityValueCandidate(
-                        value='value', 
-                        probability= 1.0
-                    )
-                )
+                value=given_string_value()
             )
         ],
         message=Message(
@@ -152,14 +162,7 @@ def given_entity() -> Entity:
         evaluated=True,
         new=False,
         content="content",
-        value=EntityValue(
-                type='type', 
-                value='value', 
-                candidates=EntityValueCandidate(
-                    value='value', 
-                    probability= 1.0
-                )
-            )
+        value=given_string_value()
     )
 
 
@@ -228,7 +231,23 @@ def given_story_configuration() -> StoryConfiguration:
         steps=[]
     )
 
- 
+
+class TestDurationValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_duration_value()
+        schema = DurationValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestStringValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_string_value()
+        schema = StringValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
 class TestEntitySchema(TestCase):
     def test_json_serialization(self):
         expected = given_entity()
