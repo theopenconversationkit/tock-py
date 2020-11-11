@@ -45,7 +45,7 @@ class CandidateSchema(TockSchema):
     probability = fields.Float(required=True)
 
     @post_load
-    def make_entity_value_candidate(self, data, **kwargs):
+    def make_candidate(self, data, **kwargs) -> Candidate:
         return Candidate(**data)
 
 
@@ -53,7 +53,7 @@ class StringValueSchema(ValueSchema):
     candidates = fields.List(fields.Nested(CandidateSchema))
 
     @post_load
-    def make_entity_value(self, data, **kwargs):
+    def make_string_value(self, data, **kwargs) -> StringValue:
         return StringValue(**data)
 
 
@@ -84,13 +84,13 @@ class EntitySchema(TockSchema):
     type = fields.String(required=True)
     role = fields.String(required=True)
     content = fields.String(required=False)
-    value = fields.Nested(UberValueSchema, requred=False)
+    value = fields.Nested(UberValueSchema, required=False)
     evaluated = fields.Boolean(required=True)
     # subEntities = fields.List(fields.Nested(EntitySchema), required=True)
     new = fields.Boolean(required=True)
 
     @post_load
-    def make_entity(self, data, **kwargs):
+    def make_entity(self, data, **kwargs) -> Entity:
         return Entity(**data)
 
 
@@ -99,7 +99,7 @@ class MessageSchema(TockSchema):
     text = fields.String(required=True)
 
     @post_load
-    def make_message(self, data, **kwargs):
+    def make_message(self, data, **kwargs) -> Message:
         return Message(**data)
 
 
@@ -108,7 +108,7 @@ class ConnectorTypeSchema(TockSchema):
     user_interface_type = fields.String(required=True)
 
     @post_load
-    def make_connector_type(self, data, **kwargs):
+    def make_connector_type(self, data, **kwargs) -> ConnectorType:
         return ConnectorType(**data)
 
 
@@ -118,7 +118,7 @@ class UserIdSchema(TockSchema):
     client_id = fields.String(required=False, allow_none=True)
 
     @post_load
-    def make_user_id(self, data, **kwargs):
+    def make_user_id(self, data, **kwargs) -> UserId:
         return UserId(**data)
 
 
@@ -128,7 +128,7 @@ class UserSchema(TockSchema):
     test = fields.Boolean(required=True)
 
     @post_load
-    def make_user(self, data, **kwargs):
+    def make_user(self, data, **kwargs) -> User:
         return User(**data)
 
 
@@ -143,7 +143,7 @@ class RequestContextSchema(TockSchema):
     user = fields.Nested(UserSchema)
 
     @post_load
-    def make_request_context(self, data, **kwargs):
+    def make_request_context(self, data, **kwargs) -> RequestContext:
         return RequestContext(**data)
 
 
@@ -155,7 +155,7 @@ class I18NTextSchema(TockSchema):
     key = fields.String(required=False)
 
     @post_load
-    def make_i18n_text(self, data, **kwargs):
+    def make_i18n_text(self, data, **kwargs) -> I18nText:
         return I18nText(**data)
 
 
@@ -163,7 +163,7 @@ class SuggestionSchema(TockSchema):
     title = fields.Nested(I18NTextSchema, required=True)
 
     @post_load
-    def make_suggestion(self, data, **kwargs):
+    def make_suggestion(self, data, **kwargs) -> Suggestion:
         return Suggestion(**data)
 
 
@@ -172,7 +172,7 @@ class AttachmentSchema(TockSchema):
     type = EnumField(AttachmentType, by_value=True, required=False)
 
     @post_load
-    def make_attachment(self, data, **kwargs):
+    def make_attachment(self, data, **kwargs) -> Attachment:
         return Attachment(**data)
 
 
@@ -181,7 +181,7 @@ class ActionSchema(TockSchema):
     url = fields.String(required=False)
 
     @post_load
-    def make_suggestion(self, data, **kwargs):
+    def make_action(self, data, **kwargs) -> Action:
         return Action(**data)
 
 
@@ -194,7 +194,7 @@ class SentenceSchema(BotMessageSchema):
     suggestions = fields.List(fields.Nested(SuggestionSchema), required=True)
 
     @post_load
-    def make_sentence(self, data, **kwargs):
+    def make_sentence(self, data, **kwargs) -> Sentence:
         return Sentence(**data)
 
 
@@ -205,7 +205,7 @@ class CardSchema(BotMessageSchema):
     actions = fields.List(fields.Nested(ActionSchema), required=True)
 
     @post_load
-    def make_card(self, data, **kwargs):
+    def make_card(self, data, **kwargs) -> Card:
         return Card(**data)
 
 
@@ -224,7 +224,7 @@ class CarouselSchema(BotMessageSchema):
     cards = fields.List(fields.Nested(UberCardSchema), required=True)
 
     @post_load
-    def make_carousel(self, data, **kwargs):
+    def make_carousel(self, data, **kwargs) -> Carousel:
         return Carousel(**data)
 
 
@@ -248,7 +248,7 @@ class ResponseContextSchema(TockSchema):
     date = fields.DateTime(required=True)
 
     @post_load
-    def make_response_context(self, data, **kwargs):
+    def make_response_context(self, data, **kwargs) -> ResponseContext:
         return ResponseContext(**data)
 
 
@@ -260,7 +260,7 @@ class BotRequestSchema(TockSchema):
     context = fields.Nested(RequestContextSchema, required=False)
 
     @post_load
-    def make_bot_request(self, data, **kwargs):
+    def make_bot_request(self, data, **kwargs) -> BotRequest:
         return BotRequest(**data)
 
 
@@ -272,7 +272,7 @@ class BotResponseSchema(TockSchema):
     context = fields.Nested(ResponseContextSchema, required=True)
 
     @post_load
-    def make_bot_response(self, data, **kwargs):
+    def make_bot_response(self, data, **kwargs) -> BotResponse:
         return BotResponse(**data)
 
 
@@ -283,7 +283,7 @@ class StepConfigurationSchema(TockSchema):
     secondary_intents = fields.List(String, required=True)
 
     @post_load
-    def make_step_configuration(self, data, **kwargs):
+    def make_step_configuration(self, data, **kwargs) -> StepConfiguration:
         return StepConfiguration(**data)
 
 
@@ -295,7 +295,7 @@ class StoryConfigurationSchema(TockSchema):
     steps = fields.List(fields.Nested(StepConfigurationSchema), required=True)
 
     @post_load
-    def make_story_configuration(self, data, **kwargs):
+    def make_story_configuration(self, data, **kwargs) -> StoryConfiguration:
         return StoryConfiguration(**data)
 
 
@@ -303,7 +303,7 @@ class ClientConfigurationSchema(TockSchema):
     stories = fields.List(fields.Nested(StoryConfigurationSchema), required=True)
 
     @post_load
-    def make_client_configuration(self, data, **kwargs):
+    def make_client_configuration(self, data, **kwargs) -> ClientConfiguration:
         return ClientConfiguration(**data)
 
 
@@ -315,7 +315,7 @@ class TockMessageSchema(TockSchema):
     request_id = fields.String(required=True)
 
     @post_load
-    def make_tockmessage(self, data, **kwargs):
+    def make_tockmessage(self, data, **kwargs) -> TockMessage:
         return TockMessage(**data)
 
 
