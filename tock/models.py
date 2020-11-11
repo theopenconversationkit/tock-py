@@ -22,6 +22,12 @@ class Value(abc.ABC):
 
 
 @dataclass
+class AmountOfMoneyValue(Value):
+    value: int
+    unit: str
+
+
+@dataclass
 class Candidate:
     value: str
     probability: float

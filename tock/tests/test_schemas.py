@@ -8,12 +8,21 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     User, RequestContext, PlayerType, Suggestion, I18nText, \
     Sentence, ResponseContext, BotRequest, BotResponse, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
-    ClientConfiguration, StoryConfiguration, Value, Candidate, StringValue, DurationValue, DistanceValue
+    ClientConfiguration, StoryConfiguration, Value, Candidate, StringValue, DurationValue, DistanceValue, \
+    AmountOfMoneyValue
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
-    StoryConfigurationSchema, DurationValueSchema, UberValueSchema, StringValueSchema, DistanceValueSchema
+    StoryConfigurationSchema, DurationValueSchema, UberValueSchema, StringValueSchema, DistanceValueSchema, \
+    AmountOfMoneyValueSchema
+
+
+def given_amount_of_money_value() -> AmountOfMoneyValue:
+    return AmountOfMoneyValue(
+        value=15,
+        unit="EUR"
+    )
 
 
 def given_distance_value() -> DistanceValue:
@@ -237,6 +246,14 @@ def given_story_configuration() -> StoryConfiguration:
         secondary_intents=["other_start_intent_1", "other_start_intent_2"],
         steps=[]
     )
+
+
+class TestAmountOfMoneyValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_amount_of_money_value()
+        schema = AmountOfMoneyValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
 
 
 class TestDistanceValueSchema(TestCase):

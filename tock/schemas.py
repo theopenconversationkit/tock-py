@@ -8,7 +8,7 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Message, Entity, RequestContext, BotResponse, ResponseContext, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
-    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue
+    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue
 
 
 def camelcase(s):
@@ -34,6 +34,15 @@ class TockSchema(Schema):
         unknown = EXCLUDE
         datetimeformat = '%Y-%m-%dT%H:%M:%SZ'
         ordered = True
+
+
+class AmountOfMoneyValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = fields.String(required=True)
+
+    @post_load
+    def make_distance_value(self, data, **kwargs) -> AmountOfMoneyValue:
+        return AmountOfMoneyValue(**data)
 
 
 class CandidateSchema(TockSchema):
@@ -74,12 +83,15 @@ class DistanceValueSchema(TockSchema):
 class UberValueSchema(OneOfSchema):
     type_field = "@type"
     type_schemas = {
+        "amountOfMoney": AmountOfMoneyValueSchema,
         "distance": DistanceValueSchema,
         "duration": DurationValueSchema,
         "string": StringValueSchema
     }
 
     def get_obj_type(self, obj):
+        if isinstance(obj, AmountOfMoneyValue):
+            return "amountOfMoney"
         if isinstance(obj, DistanceValue):
             return "distance"
         if isinstance(obj, DurationValue):
