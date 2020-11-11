@@ -8,7 +8,7 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Message, Entity, RequestContext, BotResponse, ResponseContext, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
-    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate
+    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue
 
 
 def camelcase(s):
@@ -36,10 +36,6 @@ class TockSchema(Schema):
         ordered = True
 
 
-class ValueSchema(TockSchema):
-    value = fields.String(required=True)
-
-
 class CandidateSchema(TockSchema):
     value = fields.String(required=True)
     probability = fields.Float(required=True)
@@ -49,7 +45,8 @@ class CandidateSchema(TockSchema):
         return Candidate(**data)
 
 
-class StringValueSchema(ValueSchema):
+class StringValueSchema(TockSchema):
+    value = fields.String(required=True)
     candidates = fields.List(fields.Nested(CandidateSchema))
 
     @post_load
@@ -57,21 +54,34 @@ class StringValueSchema(ValueSchema):
         return StringValue(**data)
 
 
-class DurationValueSchema(ValueSchema):
+class DurationValueSchema(TockSchema):
+    value = fields.String(required=True)
 
     @post_load
     def make_duration_value(self, data, **kwargs) -> DurationValue:
         return DurationValue(**data)
 
 
+class DistanceValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = fields.String(required=True)
+
+    @post_load
+    def make_distance_value(self, data, **kwargs) -> DistanceValue:
+        return DistanceValue(**data)
+
+
 class UberValueSchema(OneOfSchema):
     type_field = "@type"
     type_schemas = {
+        "distance": DistanceValueSchema,
         "duration": DurationValueSchema,
         "string": StringValueSchema
     }
 
     def get_obj_type(self, obj):
+        if isinstance(obj, DistanceValue):
+            return "distance"
         if isinstance(obj, DurationValue):
             return "duration"
         if isinstance(obj, StringValue):

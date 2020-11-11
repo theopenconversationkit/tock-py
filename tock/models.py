@@ -17,9 +17,8 @@ class PlayerType(Enum):
 IntentName = str
 
 
-@dataclass
 class Value(abc.ABC):
-    value: str
+    pass
 
 
 @dataclass
@@ -30,11 +29,19 @@ class Candidate:
 
 @dataclass
 class StringValue(Value):
+    value: str
     candidates: List[Candidate]
 
 
 @dataclass
+class DistanceValue(Value):
+    value: int
+    unit: str
+
+
+@dataclass
 class DurationValue(Value):
+    value: str
 
     def to_timedelta(self) -> timedelta:
         return parse_duration(self.value)
