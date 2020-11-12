@@ -8,7 +8,8 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Message, Entity, RequestContext, BotResponse, ResponseContext, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
-    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue
+    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue, \
+    TemperatureValue, TemperatureUnit
 
 
 def camelcase(s):
@@ -80,13 +81,23 @@ class DistanceValueSchema(TockSchema):
         return DistanceValue(**data)
 
 
+class TemperatureValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = EnumField(TemperatureUnit, by_value=True)
+
+    @post_load
+    def make_temperature_value(self, data, **kwargs) -> TemperatureValue:
+        return TemperatureValue(**data)
+
+
 class UberValueSchema(OneOfSchema):
     type_field = "@type"
     type_schemas = {
         "amountOfMoney": AmountOfMoneyValueSchema,
         "distance": DistanceValueSchema,
         "duration": DurationValueSchema,
-        "string": StringValueSchema
+        "string": StringValueSchema,
+        "temperature": TemperatureValueSchema
     }
 
     def get_obj_type(self, obj):
@@ -98,6 +109,8 @@ class UberValueSchema(OneOfSchema):
             return "duration"
         if isinstance(obj, StringValue):
             return "string"
+        if isinstance(obj, TemperatureValue):
+            return "temperature"
         else:
             raise Exception("Unknown object type: {}".format(obj.__class__.__name__))
 

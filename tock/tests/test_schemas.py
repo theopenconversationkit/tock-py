@@ -9,13 +9,13 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     Sentence, ResponseContext, BotRequest, BotResponse, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
     ClientConfiguration, StoryConfiguration, Value, Candidate, StringValue, DurationValue, DistanceValue, \
-    AmountOfMoneyValue
+    AmountOfMoneyValue, TemperatureValue, TemperatureUnit
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
     StoryConfigurationSchema, DurationValueSchema, UberValueSchema, StringValueSchema, DistanceValueSchema, \
-    AmountOfMoneyValueSchema
+    AmountOfMoneyValueSchema, TemperatureValueSchema
 
 
 def given_amount_of_money_value() -> AmountOfMoneyValue:
@@ -47,6 +47,13 @@ def given_string_value() -> StringValue:
                 probability=1.0
             )
         ])
+
+
+def given_temperature_value() -> TemperatureValue:
+    return TemperatureValue(
+        value=37,
+        unit=TemperatureUnit.CELSIUS
+    )
 
 
 def given_bot_request() -> BotRequest:
@@ -276,6 +283,14 @@ class TestStringValueSchema(TestCase):
     def test_json_serialization(self):
         expected = given_string_value()
         schema = StringValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestTemperatureValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_temperature_value()
+        schema = TemperatureValueSchema()
         result = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)
 

@@ -53,6 +53,17 @@ class DurationValue(Value):
         return parse_duration(self.value)
 
 
+class TemperatureUnit(Enum):
+    CELSIUS = "celsius"
+    FAHRENHEIT = "fahrenheit"
+    DEGREE = "degree"
+
+
+@dataclass
+class TemperatureValue(Value):
+    value: int
+    unit: TemperatureUnit
+
 @dataclass
 class Entity:
     type: str
