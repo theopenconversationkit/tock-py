@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 import abc
 import uuid
 from dataclasses import dataclass
@@ -33,6 +34,36 @@ class Candidate:
     probability: float
 
 
+class DateGrain(Enum):
+    TIMEZONE = "timezone"
+    UNKNOWN = "unknown"
+    SECOND = "second"
+    MINUTE = "minute"
+    HOUR = "hour"
+    DAY_OF_WEEK = "day_of_week"
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
+    QUARTER = "quarter"
+    YEAR = "year"
+
+
+class DateValue(abc.ABC):
+    pass
+
+
+@dataclass
+class DateEntityValue(DateValue):
+    date: datetime
+    grain: DateGrain
+
+
+@dataclass
+class DateIntervalEntityValue(DateValue):
+    date: DateValue
+    to_date: DateValue
+
+
 @dataclass
 class StringValue(Value):
     value: str
@@ -63,6 +94,7 @@ class TemperatureUnit(Enum):
 class TemperatureValue(Value):
     value: int
     unit: TemperatureUnit
+
 
 @dataclass
 class Entity:

@@ -8,20 +8,35 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     User, RequestContext, PlayerType, Suggestion, I18nText, \
     Sentence, ResponseContext, BotRequest, BotResponse, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
-    ClientConfiguration, StoryConfiguration, Value, Candidate, StringValue, DurationValue, DistanceValue, \
-    AmountOfMoneyValue, TemperatureValue, TemperatureUnit
+    ClientConfiguration, StoryConfiguration, Candidate, StringValue, DurationValue, DistanceValue, \
+    AmountOfMoneyValue, TemperatureValue, TemperatureUnit, DateIntervalEntityValue, DateValue, DateEntityValue, \
+    DateGrain
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
-    StoryConfigurationSchema, DurationValueSchema, UberValueSchema, StringValueSchema, DistanceValueSchema, \
-    AmountOfMoneyValueSchema, TemperatureValueSchema
+    StoryConfigurationSchema, DurationValueSchema, StringValueSchema, DistanceValueSchema, \
+    AmountOfMoneyValueSchema, TemperatureValueSchema, DateIntervalEntityValueSchema, DateEntityValueSchema
 
 
 def given_amount_of_money_value() -> AmountOfMoneyValue:
     return AmountOfMoneyValue(
         value=15,
         unit="EUR"
+    )
+
+
+def given_date_entity_value(date: datetime = datetime(2020, 1, 1, 4, 0, 0, 0)) -> DateEntityValue:
+    return DateEntityValue(
+        date=date,
+        grain=DateGrain.HOUR
+    )
+
+
+def given_date_interval_entity_value() -> DateIntervalEntityValue:
+    return DateIntervalEntityValue(
+        date=given_date_entity_value(datetime(2020, 1, 1, 4, 0, 0, 0)),
+        to_date=given_date_entity_value(datetime(2020, 1, 1, 12, 0, 0, 0))
     )
 
 
@@ -259,6 +274,22 @@ class TestAmountOfMoneyValueSchema(TestCase):
     def test_json_serialization(self):
         expected = given_amount_of_money_value()
         schema = AmountOfMoneyValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestDateEntityValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_date_entity_value()
+        schema = DateEntityValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestDateIntervalEntityValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_date_interval_entity_value()
+        schema = DateIntervalEntityValueSchema()
         result = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)
 

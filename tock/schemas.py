@@ -9,7 +9,7 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
     StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue, \
-    TemperatureValue, TemperatureUnit
+    TemperatureValue, TemperatureUnit, DateGrain, DateValue, DateIntervalEntityValue, DateEntityValue
 
 
 def camelcase(s):
@@ -64,6 +64,37 @@ class StringValueSchema(TockSchema):
         return StringValue(**data)
 
 
+class DateEntityValueSchema(TockSchema):
+    date = fields.DateTime(required=True)
+    grain = EnumField(DateGrain, by_value=True)
+
+    @post_load
+    def make_date_value(self, data, **kwargs) -> DateEntityValue:
+        return DateEntityValue(**data)
+
+
+class UberDateValueSchema(OneOfSchema):
+    type_field = "@type"
+    type_schemas = {
+        "dateEntity": DateEntityValueSchema
+    }
+
+    def get_obj_type(self, obj):
+        if isinstance(obj, DateEntityValue):
+            return "dateEntity"
+        else:
+            raise Exception("Unknown object type: {}".format(obj.__class__.__name__))
+
+
+class DateIntervalEntityValueSchema(TockSchema):
+    date = fields.Nested(UberDateValueSchema)
+    to_date = fields.Nested(UberDateValueSchema)
+
+    @post_load
+    def make_date_interval_value(self, data, **kwargs) -> DateIntervalEntityValue:
+        return DateIntervalEntityValue(**data)
+
+
 class DurationValueSchema(TockSchema):
     value = fields.String(required=True)
 
@@ -94,6 +125,8 @@ class UberValueSchema(OneOfSchema):
     type_field = "@type"
     type_schemas = {
         "amountOfMoney": AmountOfMoneyValueSchema,
+        "dateEntity": DateEntityValueSchema,
+        "dateIntervalEntity": DateIntervalEntityValueSchema,
         "distance": DistanceValueSchema,
         "duration": DurationValueSchema,
         "string": StringValueSchema,
@@ -103,6 +136,10 @@ class UberValueSchema(OneOfSchema):
     def get_obj_type(self, obj):
         if isinstance(obj, AmountOfMoneyValue):
             return "amountOfMoney"
+        if isinstance(obj, DateEntityValue):
+            return "dateEntity"
+        if isinstance(obj, DateIntervalEntityValue):
+            return "dateIntervalEntity"
         if isinstance(obj, DistanceValue):
             return "distance"
         if isinstance(obj, DurationValue):
