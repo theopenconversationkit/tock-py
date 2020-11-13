@@ -65,6 +65,20 @@ class DateIntervalEntityValue(DateValue):
 
 
 @dataclass
+class DistanceValue(Value):
+    value: int
+    unit: str
+
+
+@dataclass
+class DurationValue(Value):
+    value: str
+
+    def to_timedelta(self) -> timedelta:
+        return parse_duration(self.value)
+
+
+@dataclass
 class EmailValue(Value):
     value: str
 
@@ -80,23 +94,14 @@ class OrdinalValue(Value):
 
 
 @dataclass
+class PhoneNumberValue(Value):
+    value: str
+
+
+@dataclass
 class StringValue(Value):
     value: str
     candidates: List[Candidate]
-
-
-@dataclass
-class DistanceValue(Value):
-    value: int
-    unit: str
-
-
-@dataclass
-class DurationValue(Value):
-    value: str
-
-    def to_timedelta(self) -> timedelta:
-        return parse_duration(self.value)
 
 
 class TemperatureUnit(Enum):
@@ -109,6 +114,11 @@ class TemperatureUnit(Enum):
 class TemperatureValue(Value):
     value: int
     unit: TemperatureUnit
+
+
+@dataclass
+class UrlValue(Value):
+    value: str
 
 
 @dataclass

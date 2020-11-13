@@ -10,14 +10,14 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
     ClientConfiguration, StoryConfiguration, Candidate, StringValue, DurationValue, DistanceValue, \
     AmountOfMoneyValue, TemperatureValue, TemperatureUnit, DateIntervalEntityValue, DateValue, DateEntityValue, \
-    DateGrain, EmailValue, NumberValue, OrdinalValue
+    DateGrain, EmailValue, NumberValue, OrdinalValue, PhoneNumberValue, UrlValue
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
     StoryConfigurationSchema, DurationValueSchema, StringValueSchema, DistanceValueSchema, \
     AmountOfMoneyValueSchema, TemperatureValueSchema, DateIntervalEntityValueSchema, DateEntityValueSchema, \
-    EmailValueSchema, NumberValueSchema, OrdinalValueSchema
+    EmailValueSchema, NumberValueSchema, OrdinalValueSchema, PhoneNumberValueSchema, UrlValueSchema
 
 
 def given_amount_of_money_value() -> AmountOfMoneyValue:
@@ -72,6 +72,12 @@ def given_ordinal_value() -> OrdinalValue:
     )
 
 
+def given_phone_number_value() -> PhoneNumberValue:
+    return PhoneNumberValue(
+        value="+1 (650) 123-4567"
+    )
+
+
 def given_string_value() -> StringValue:
     return StringValue(
         value='value',
@@ -87,6 +93,12 @@ def given_temperature_value() -> TemperatureValue:
     return TemperatureValue(
         value=37,
         unit=TemperatureUnit.CELSIUS
+    )
+
+
+def given_url_value() -> UrlValue:
+    return UrlValue(
+        value="https://api.wit.ai/message?q=hi"
     )
 
 
@@ -353,6 +365,14 @@ class TestOrdinalValueSchema(TestCase):
         self.assertEqual(expected, result)
 
 
+class TestPhoneNumberValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_phone_number_value()
+        schema = PhoneNumberValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
 class TestStringValueSchema(TestCase):
     def test_json_serialization(self):
         expected = given_string_value()
@@ -365,6 +385,14 @@ class TestTemperatureValueSchema(TestCase):
     def test_json_serialization(self):
         expected = given_temperature_value()
         schema = TemperatureValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestUrlValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_url_value()
+        schema = UrlValueSchema()
         result = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)
 

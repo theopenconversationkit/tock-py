@@ -10,7 +10,7 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Attachment, Action, Carousel, StoryConfiguration, \
     StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue, \
     TemperatureValue, TemperatureUnit, DateGrain, DateValue, DateIntervalEntityValue, DateEntityValue, EmailValue, \
-    NumberValue, OrdinalValue
+    NumberValue, OrdinalValue, PhoneNumberValue, UrlValue
 
 
 def camelcase(s):
@@ -137,6 +137,14 @@ class OrdinalValueSchema(TockSchema):
         return OrdinalValue(**data)
 
 
+class PhoneNumberValueSchema(TockSchema):
+    value = fields.String(required=True)
+
+    @post_load
+    def make_phone_number_value(self, data, **kwargs) -> PhoneNumberValue:
+        return PhoneNumberValue(**data)
+
+
 class TemperatureValueSchema(TockSchema):
     value = fields.Number(required=True)
     unit = EnumField(TemperatureUnit, by_value=True)
@@ -144,6 +152,14 @@ class TemperatureValueSchema(TockSchema):
     @post_load
     def make_temperature_value(self, data, **kwargs) -> TemperatureValue:
         return TemperatureValue(**data)
+
+
+class UrlValueSchema(TockSchema):
+    value = fields.String(required=True)
+
+    @post_load
+    def make_url_value(self, data, **kwargs) -> UrlValue:
+        return UrlValue(**data)
 
 
 class UberValueSchema(OneOfSchema):
@@ -157,8 +173,10 @@ class UberValueSchema(OneOfSchema):
         "email": EmailValueSchema,
         "number": NumberValueSchema,
         "ordinal": OrdinalValueSchema,
+        "phoneNumber": PhoneNumberValueSchema,
         "string": StringValueSchema,
-        "temperature": TemperatureValueSchema
+        "temperature": TemperatureValueSchema,
+        "url": UrlValueSchema,
     }
 
     def get_obj_type(self, obj):
@@ -178,10 +196,14 @@ class UberValueSchema(OneOfSchema):
             return "number"
         if isinstance(obj, OrdinalValue):
             return "ordinal"
+        if isinstance(obj, PhoneNumberValue):
+            return "phoneNumber"
         if isinstance(obj, StringValue):
             return "string"
         if isinstance(obj, TemperatureValue):
             return "temperature"
+        if isinstance(obj, UrlValue):
+            return "url"
         else:
             raise Exception("Unknown object type: {}".format(obj.__class__.__name__))
 
