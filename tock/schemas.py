@@ -10,7 +10,7 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Attachment, Action, Carousel, StoryConfiguration, \
     StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue, \
     TemperatureValue, TemperatureUnit, DateGrain, DateValue, DateIntervalEntityValue, DateEntityValue, EmailValue, \
-    NumberValue
+    NumberValue, OrdinalValue
 
 
 def camelcase(s):
@@ -129,6 +129,14 @@ class NumberValueSchema(TockSchema):
         return NumberValue(**data)
 
 
+class OrdinalValueSchema(TockSchema):
+    value = fields.Number(required=True)
+
+    @post_load
+    def make_ordinal_value(self, data, **kwargs) -> OrdinalValue:
+        return OrdinalValue(**data)
+
+
 class TemperatureValueSchema(TockSchema):
     value = fields.Number(required=True)
     unit = EnumField(TemperatureUnit, by_value=True)
@@ -148,6 +156,7 @@ class UberValueSchema(OneOfSchema):
         "duration": DurationValueSchema,
         "email": EmailValueSchema,
         "number": NumberValueSchema,
+        "ordinal": OrdinalValueSchema,
         "string": StringValueSchema,
         "temperature": TemperatureValueSchema
     }
@@ -167,6 +176,8 @@ class UberValueSchema(OneOfSchema):
             return "email"
         if isinstance(obj, NumberValue):
             return "number"
+        if isinstance(obj, OrdinalValue):
+            return "ordinal"
         if isinstance(obj, StringValue):
             return "string"
         if isinstance(obj, TemperatureValue):
