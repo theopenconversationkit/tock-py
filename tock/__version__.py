@@ -1,1 +1,1 @@
-verstr = '0.0.1-dev9'
+verstr = '0.0.1-dev10'
