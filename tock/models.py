@@ -70,6 +70,11 @@ class EmailValue(Value):
 
 
 @dataclass
+class NumberValue(Value):
+    value: int
+
+
+@dataclass
 class StringValue(Value):
     value: str
     candidates: List[Candidate]

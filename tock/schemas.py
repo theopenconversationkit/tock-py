@@ -9,7 +9,8 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
     StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue, \
-    TemperatureValue, TemperatureUnit, DateGrain, DateValue, DateIntervalEntityValue, DateEntityValue, EmailValue
+    TemperatureValue, TemperatureUnit, DateGrain, DateValue, DateIntervalEntityValue, DateEntityValue, EmailValue, \
+    NumberValue
 
 
 def camelcase(s):
@@ -120,6 +121,14 @@ class EmailValueSchema(TockSchema):
         return EmailValue(**data)
 
 
+class NumberValueSchema(TockSchema):
+    value = fields.Number(required=True)
+
+    @post_load
+    def make_number_value(self, data, **kwargs) -> NumberValue:
+        return NumberValue(**data)
+
+
 class TemperatureValueSchema(TockSchema):
     value = fields.Number(required=True)
     unit = EnumField(TemperatureUnit, by_value=True)
@@ -138,6 +147,7 @@ class UberValueSchema(OneOfSchema):
         "distance": DistanceValueSchema,
         "duration": DurationValueSchema,
         "email": EmailValueSchema,
+        "number": NumberValueSchema,
         "string": StringValueSchema,
         "temperature": TemperatureValueSchema
     }
@@ -155,6 +165,8 @@ class UberValueSchema(OneOfSchema):
             return "duration"
         if isinstance(obj, EmailValue):
             return "email"
+        if isinstance(obj, NumberValue):
+            return "number"
         if isinstance(obj, StringValue):
             return "string"
         if isinstance(obj, TemperatureValue):
