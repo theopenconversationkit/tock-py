@@ -65,6 +65,11 @@ class DateIntervalEntityValue(DateValue):
 
 
 @dataclass
+class EmailValue(Value):
+    value: str
+
+
+@dataclass
 class StringValue(Value):
     value: str
     candidates: List[Candidate]

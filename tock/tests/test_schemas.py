@@ -10,13 +10,14 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
     ClientConfiguration, StoryConfiguration, Candidate, StringValue, DurationValue, DistanceValue, \
     AmountOfMoneyValue, TemperatureValue, TemperatureUnit, DateIntervalEntityValue, DateValue, DateEntityValue, \
-    DateGrain
+    DateGrain, EmailValue
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
     StoryConfigurationSchema, DurationValueSchema, StringValueSchema, DistanceValueSchema, \
-    AmountOfMoneyValueSchema, TemperatureValueSchema, DateIntervalEntityValueSchema, DateEntityValueSchema
+    AmountOfMoneyValueSchema, TemperatureValueSchema, DateIntervalEntityValueSchema, DateEntityValueSchema, \
+    EmailValueSchema
 
 
 def given_amount_of_money_value() -> AmountOfMoneyValue:
@@ -50,6 +51,12 @@ def given_distance_value() -> DistanceValue:
 def given_duration_value() -> DurationValue:
     return DurationValue(
         value="PT15M"
+    )
+
+
+def given_email_value() -> AmountOfMoneyValue:
+    return EmailValue(
+        value="xxx@yyy.zzz"
     )
 
 
@@ -306,6 +313,14 @@ class TestDurationValueSchema(TestCase):
     def test_json_serialization(self):
         expected = given_duration_value()
         schema = DurationValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestEmailValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_email_value()
+        schema = EmailValueSchema()
         result = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)
 
