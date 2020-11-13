@@ -8,7 +8,9 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Message, Entity, RequestContext, BotResponse, ResponseContext, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
-    StepConfiguration, ClientConfiguration
+    StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue, \
+    TemperatureValue, TemperatureUnit, DateGrain, DateIntervalEntityValue, DateEntityValue, EmailValue, \
+    NumberValue, OrdinalValue, PhoneNumberValue, UrlValue, VolumeValue
 
 
 def camelcase(s):
@@ -36,17 +38,199 @@ class TockSchema(Schema):
         ordered = True
 
 
+class AmountOfMoneyValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = fields.String(required=True)
+
+    @post_load
+    def make_distance_value(self, data, **kwargs) -> AmountOfMoneyValue:
+        return AmountOfMoneyValue(**data)
+
+
+class CandidateSchema(TockSchema):
+    value = fields.String(required=True)
+    probability = fields.Float(required=True)
+
+    @post_load
+    def make_candidate(self, data, **kwargs) -> Candidate:
+        return Candidate(**data)
+
+
+class StringValueSchema(TockSchema):
+    value = fields.String(required=True)
+    candidates = fields.List(fields.Nested(CandidateSchema))
+
+    @post_load
+    def make_string_value(self, data, **kwargs) -> StringValue:
+        return StringValue(**data)
+
+
+class DateEntityValueSchema(TockSchema):
+    date = fields.DateTime(required=True)
+    grain = EnumField(DateGrain, by_value=True)
+
+    @post_load
+    def make_date_value(self, data, **kwargs) -> DateEntityValue:
+        return DateEntityValue(**data)
+
+
+class UberDateValueSchema(OneOfSchema):
+    type_field = "@type"
+    type_schemas = {
+        "dateEntity": DateEntityValueSchema
+    }
+
+    def get_obj_type(self, obj):
+        if isinstance(obj, DateEntityValue):
+            return "dateEntity"
+        else:
+            raise Exception("Unknown object type: {}".format(obj.__class__.__name__))
+
+
+class DateIntervalEntityValueSchema(TockSchema):
+    date = fields.Nested(UberDateValueSchema)
+    to_date = fields.Nested(UberDateValueSchema)
+
+    @post_load
+    def make_date_interval_value(self, data, **kwargs) -> DateIntervalEntityValue:
+        return DateIntervalEntityValue(**data)
+
+
+class DurationValueSchema(TockSchema):
+    value = fields.String(required=True)
+
+    @post_load
+    def make_duration_value(self, data, **kwargs) -> DurationValue:
+        return DurationValue(**data)
+
+
+class DistanceValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = fields.String(required=True)
+
+    @post_load
+    def make_distance_value(self, data, **kwargs) -> DistanceValue:
+        return DistanceValue(**data)
+
+
+class EmailValueSchema(TockSchema):
+    value = fields.String(required=True)
+
+    @post_load
+    def make_email_value(self, data, **kwargs) -> EmailValue:
+        return EmailValue(**data)
+
+
+class NumberValueSchema(TockSchema):
+    value = fields.Number(required=True)
+
+    @post_load
+    def make_number_value(self, data, **kwargs) -> NumberValue:
+        return NumberValue(**data)
+
+
+class OrdinalValueSchema(TockSchema):
+    value = fields.Number(required=True)
+
+    @post_load
+    def make_ordinal_value(self, data, **kwargs) -> OrdinalValue:
+        return OrdinalValue(**data)
+
+
+class PhoneNumberValueSchema(TockSchema):
+    value = fields.String(required=True)
+
+    @post_load
+    def make_phone_number_value(self, data, **kwargs) -> PhoneNumberValue:
+        return PhoneNumberValue(**data)
+
+
+class TemperatureValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = EnumField(TemperatureUnit, by_value=True)
+
+    @post_load
+    def make_temperature_value(self, data, **kwargs) -> TemperatureValue:
+        return TemperatureValue(**data)
+
+
+class UrlValueSchema(TockSchema):
+    value = fields.String(required=True)
+
+    @post_load
+    def make_url_value(self, data, **kwargs) -> UrlValue:
+        return UrlValue(**data)
+
+
+class VolumeValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = fields.String(required=True)
+
+    @post_load
+    def make_volume_value(self, data, **kwargs) -> VolumeValue:
+        return VolumeValue(**data)
+
+
+class UberValueSchema(OneOfSchema):
+    type_field = "@type"
+    type_schemas = {
+        "amountOfMoney": AmountOfMoneyValueSchema,
+        "dateEntity": DateEntityValueSchema,
+        "dateIntervalEntity": DateIntervalEntityValueSchema,
+        "distance": DistanceValueSchema,
+        "duration": DurationValueSchema,
+        "email": EmailValueSchema,
+        "number": NumberValueSchema,
+        "ordinal": OrdinalValueSchema,
+        "phoneNumber": PhoneNumberValueSchema,
+        "string": StringValueSchema,
+        "temperature": TemperatureValueSchema,
+        "url": UrlValueSchema,
+        "volume": VolumeValueSchema,
+    }
+
+    def get_obj_type(self, obj):
+        if isinstance(obj, AmountOfMoneyValue):
+            return "amountOfMoney"
+        if isinstance(obj, DateEntityValue):
+            return "dateEntity"
+        if isinstance(obj, DateIntervalEntityValue):
+            return "dateIntervalEntity"
+        if isinstance(obj, DistanceValue):
+            return "distance"
+        if isinstance(obj, DurationValue):
+            return "duration"
+        if isinstance(obj, EmailValue):
+            return "email"
+        if isinstance(obj, NumberValue):
+            return "number"
+        if isinstance(obj, OrdinalValue):
+            return "ordinal"
+        if isinstance(obj, PhoneNumberValue):
+            return "phoneNumber"
+        if isinstance(obj, StringValue):
+            return "string"
+        if isinstance(obj, TemperatureValue):
+            return "temperature"
+        if isinstance(obj, UrlValue):
+            return "url"
+        if isinstance(obj, VolumeValue):
+            return "volume"
+        else:
+            raise Exception("Unknown object type: {}".format(obj.__class__.__name__))
+
+
 class EntitySchema(TockSchema):
     type = fields.String(required=True)
     role = fields.String(required=True)
     content = fields.String(required=False)
-    value = fields.String(required=False)
+    value = fields.Nested(UberValueSchema, required=False)
     evaluated = fields.Boolean(required=True)
     # subEntities = fields.List(fields.Nested(EntitySchema), required=True)
     new = fields.Boolean(required=True)
 
     @post_load
-    def make_entity(self, data, **kwargs):
+    def make_entity(self, data, **kwargs) -> Entity:
         return Entity(**data)
 
 
@@ -55,7 +239,7 @@ class MessageSchema(TockSchema):
     text = fields.String(required=True)
 
     @post_load
-    def make_message(self, data, **kwargs):
+    def make_message(self, data, **kwargs) -> Message:
         return Message(**data)
 
 
@@ -64,7 +248,7 @@ class ConnectorTypeSchema(TockSchema):
     user_interface_type = fields.String(required=True)
 
     @post_load
-    def make_connector_type(self, data, **kwargs):
+    def make_connector_type(self, data, **kwargs) -> ConnectorType:
         return ConnectorType(**data)
 
 
@@ -74,7 +258,7 @@ class UserIdSchema(TockSchema):
     client_id = fields.String(required=False, allow_none=True)
 
     @post_load
-    def make_user_id(self, data, **kwargs):
+    def make_user_id(self, data, **kwargs) -> UserId:
         return UserId(**data)
 
 
@@ -84,7 +268,7 @@ class UserSchema(TockSchema):
     test = fields.Boolean(required=True)
 
     @post_load
-    def make_user(self, data, **kwargs):
+    def make_user(self, data, **kwargs) -> User:
         return User(**data)
 
 
@@ -99,7 +283,7 @@ class RequestContextSchema(TockSchema):
     user = fields.Nested(UserSchema)
 
     @post_load
-    def make_request_context(self, data, **kwargs):
+    def make_request_context(self, data, **kwargs) -> RequestContext:
         return RequestContext(**data)
 
 
@@ -111,7 +295,7 @@ class I18NTextSchema(TockSchema):
     key = fields.String(required=False)
 
     @post_load
-    def make_i18n_text(self, data, **kwargs):
+    def make_i18n_text(self, data, **kwargs) -> I18nText:
         return I18nText(**data)
 
 
@@ -119,7 +303,7 @@ class SuggestionSchema(TockSchema):
     title = fields.Nested(I18NTextSchema, required=True)
 
     @post_load
-    def make_suggestion(self, data, **kwargs):
+    def make_suggestion(self, data, **kwargs) -> Suggestion:
         return Suggestion(**data)
 
 
@@ -128,7 +312,7 @@ class AttachmentSchema(TockSchema):
     type = EnumField(AttachmentType, by_value=True, required=False)
 
     @post_load
-    def make_attachment(self, data, **kwargs):
+    def make_attachment(self, data, **kwargs) -> Attachment:
         return Attachment(**data)
 
 
@@ -137,7 +321,7 @@ class ActionSchema(TockSchema):
     url = fields.String(required=False)
 
     @post_load
-    def make_suggestion(self, data, **kwargs):
+    def make_action(self, data, **kwargs) -> Action:
         return Action(**data)
 
 
@@ -150,7 +334,7 @@ class SentenceSchema(BotMessageSchema):
     suggestions = fields.List(fields.Nested(SuggestionSchema), required=True)
 
     @post_load
-    def make_sentence(self, data, **kwargs):
+    def make_sentence(self, data, **kwargs) -> Sentence:
         return Sentence(**data)
 
 
@@ -161,7 +345,7 @@ class CardSchema(BotMessageSchema):
     actions = fields.List(fields.Nested(ActionSchema), required=True)
 
     @post_load
-    def make_card(self, data, **kwargs):
+    def make_card(self, data, **kwargs) -> Card:
         return Card(**data)
 
 
@@ -180,7 +364,7 @@ class CarouselSchema(BotMessageSchema):
     cards = fields.List(fields.Nested(UberCardSchema), required=True)
 
     @post_load
-    def make_carousel(self, data, **kwargs):
+    def make_carousel(self, data, **kwargs) -> Carousel:
         return Carousel(**data)
 
 
@@ -204,7 +388,7 @@ class ResponseContextSchema(TockSchema):
     date = fields.DateTime(required=True)
 
     @post_load
-    def make_response_context(self, data, **kwargs):
+    def make_response_context(self, data, **kwargs) -> ResponseContext:
         return ResponseContext(**data)
 
 
@@ -216,7 +400,7 @@ class BotRequestSchema(TockSchema):
     context = fields.Nested(RequestContextSchema, required=False)
 
     @post_load
-    def make_bot_request(self, data, **kwargs):
+    def make_bot_request(self, data, **kwargs) -> BotRequest:
         return BotRequest(**data)
 
 
@@ -228,7 +412,7 @@ class BotResponseSchema(TockSchema):
     context = fields.Nested(ResponseContextSchema, required=True)
 
     @post_load
-    def make_bot_response(self, data, **kwargs):
+    def make_bot_response(self, data, **kwargs) -> BotResponse:
         return BotResponse(**data)
 
 
@@ -239,7 +423,7 @@ class StepConfigurationSchema(TockSchema):
     secondary_intents = fields.List(String, required=True)
 
     @post_load
-    def make_step_configuration(self, data, **kwargs):
+    def make_step_configuration(self, data, **kwargs) -> StepConfiguration:
         return StepConfiguration(**data)
 
 
@@ -251,7 +435,7 @@ class StoryConfigurationSchema(TockSchema):
     steps = fields.List(fields.Nested(StepConfigurationSchema), required=True)
 
     @post_load
-    def make_story_configuration(self, data, **kwargs):
+    def make_story_configuration(self, data, **kwargs) -> StoryConfiguration:
         return StoryConfiguration(**data)
 
 
@@ -259,7 +443,7 @@ class ClientConfigurationSchema(TockSchema):
     stories = fields.List(fields.Nested(StoryConfigurationSchema), required=True)
 
     @post_load
-    def make_client_configuration(self, data, **kwargs):
+    def make_client_configuration(self, data, **kwargs) -> ClientConfiguration:
         return ClientConfiguration(**data)
 
 
@@ -271,7 +455,7 @@ class TockMessageSchema(TockSchema):
     request_id = fields.String(required=True)
 
     @post_load
-    def make_tockmessage(self, data, **kwargs):
+    def make_tockmessage(self, data, **kwargs) -> TockMessage:
         return TockMessage(**data)
 
 

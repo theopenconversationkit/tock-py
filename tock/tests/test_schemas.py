@@ -8,12 +8,105 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     User, RequestContext, PlayerType, Suggestion, I18nText, \
     Sentence, ResponseContext, BotRequest, BotResponse, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
-    ClientConfiguration, StoryConfiguration
+    ClientConfiguration, StoryConfiguration, Candidate, StringValue, DurationValue, DistanceValue, \
+    AmountOfMoneyValue, TemperatureValue, TemperatureUnit, DateIntervalEntityValue, DateEntityValue, \
+    DateGrain, EmailValue, NumberValue, OrdinalValue, PhoneNumberValue, UrlValue, VolumeValue
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
-    StoryConfigurationSchema
+    StoryConfigurationSchema, DurationValueSchema, StringValueSchema, DistanceValueSchema, \
+    AmountOfMoneyValueSchema, TemperatureValueSchema, DateIntervalEntityValueSchema, DateEntityValueSchema, \
+    EmailValueSchema, NumberValueSchema, OrdinalValueSchema, PhoneNumberValueSchema, UrlValueSchema, VolumeValueSchema
+
+
+def given_amount_of_money_value() -> AmountOfMoneyValue:
+    return AmountOfMoneyValue(
+        value=15,
+        unit="EUR"
+    )
+
+
+def given_date_entity_value(date: datetime = datetime(2020, 1, 1, 4, 0, 0, 0)) -> DateEntityValue:
+    return DateEntityValue(
+        date=date,
+        grain=DateGrain.HOUR
+    )
+
+
+def given_date_interval_entity_value() -> DateIntervalEntityValue:
+    return DateIntervalEntityValue(
+        date=given_date_entity_value(datetime(2020, 1, 1, 4, 0, 0, 0)),
+        to_date=given_date_entity_value(datetime(2020, 1, 1, 12, 0, 0, 0))
+    )
+
+
+def given_distance_value() -> DistanceValue:
+    return DistanceValue(
+        value=15,
+        unit="kilometre"
+    )
+
+
+def given_duration_value() -> DurationValue:
+    return DurationValue(
+        value="PT15M"
+    )
+
+
+def given_email_value() -> EmailValue:
+    return EmailValue(
+        value="xxx@yyy.zzz"
+    )
+
+
+def given_number_value() -> NumberValue:
+    return NumberValue(
+        value=1234567890
+    )
+
+
+def given_ordinal_value() -> OrdinalValue:
+    return OrdinalValue(
+        value=3
+    )
+
+
+def given_phone_number_value() -> PhoneNumberValue:
+    return PhoneNumberValue(
+        value="+1 (650) 123-4567"
+    )
+
+
+def given_string_value() -> StringValue:
+    return StringValue(
+        value='value',
+        candidates=[
+            Candidate(
+                value='value',
+                probability=1.0
+            )
+        ])
+
+
+def given_temperature_value() -> TemperatureValue:
+    return TemperatureValue(
+        value=37,
+        unit=TemperatureUnit.CELSIUS
+    )
+
+
+def given_url_value() -> UrlValue:
+    return UrlValue(
+        value="https://api.wit.ai/message?q=hi"
+    )
+
+
+def given_volume_value() -> VolumeValue:
+    return VolumeValue(
+        value=4,
+        unit="gallons"
+    )
 
 
 def given_bot_request() -> BotRequest:
@@ -26,7 +119,7 @@ def given_bot_request() -> BotRequest:
                 evaluated=True,
                 new=False,
                 content="content",
-                value="value"
+                value=given_string_value()
             )
         ],
         message=Message(
@@ -145,7 +238,7 @@ def given_entity() -> Entity:
         evaluated=True,
         new=False,
         content="content",
-        value="value"
+        value=given_string_value()
     )
 
 
@@ -213,6 +306,110 @@ def given_story_configuration() -> StoryConfiguration:
         secondary_intents=["other_start_intent_1", "other_start_intent_2"],
         steps=[]
     )
+
+
+class TestAmountOfMoneyValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_amount_of_money_value()
+        schema = AmountOfMoneyValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestDateEntityValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_date_entity_value()
+        schema = DateEntityValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestDateIntervalEntityValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_date_interval_entity_value()
+        schema = DateIntervalEntityValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestDistanceValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_distance_value()
+        schema = DistanceValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestDurationValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_duration_value()
+        schema = DurationValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestEmailValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_email_value()
+        schema = EmailValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestNumberValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_number_value()
+        schema = NumberValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestOrdinalValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_ordinal_value()
+        schema = OrdinalValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestPhoneNumberValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_phone_number_value()
+        schema = PhoneNumberValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestStringValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_string_value()
+        schema = StringValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestTemperatureValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_temperature_value()
+        schema = TemperatureValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestUrlValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_url_value()
+        schema = UrlValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestVolumeValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_volume_value()
+        schema = VolumeValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
 
 
 class TestEntitySchema(TestCase):
@@ -387,7 +584,6 @@ class TestClientConfigurationSchema(TestCase):
         self.assertEqual(expected, result)
 
     def test_payload(self):
-
         expected = '{"botRequest": {"intent": "greetings", "entities": [], "message": {"type": "text", "text": "yo"}, "storyId": "tock_unknown_story", "context": {"namespace": "elebescond", "language": "fr", "connectorType": {"id": "web", "userInterfaceType": "textChat"}, "userInterface": "textChat", "applicationId": "test-erwan_assistant", "userId": {"id": "test_5dcae4ec816a555b46a4857f_fr__sjniho739", "type": "user"}, "botId": {"id": "test_bot_5dcae4ec816a555b46a4857f_fr", "type": "bot"}, "user": {"timezone": "UTC", "locale": "fr", "test": false}}}, "requestId": "5f788c08c93772446f21d05f"}'
         schema = TockMessageSchema()
         loads: TockMessage = schema.loads(expected)

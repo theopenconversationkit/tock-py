@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 import abc
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Optional, Any
+
+from isodate import parse_duration
 
 
 class PlayerType(Enum):
@@ -15,6 +18,115 @@ class PlayerType(Enum):
 IntentName = str
 
 
+class Value(abc.ABC):
+    pass
+
+
+@dataclass
+class AmountOfMoneyValue(Value):
+    value: int
+    unit: str
+
+
+@dataclass
+class Candidate:
+    value: str
+    probability: float
+
+
+class DateGrain(Enum):
+    TIMEZONE = "timezone"
+    UNKNOWN = "unknown"
+    SECOND = "second"
+    MINUTE = "minute"
+    HOUR = "hour"
+    DAY_OF_WEEK = "day_of_week"
+    DAY = "day"
+    WEEK = "week"
+    MONTH = "month"
+    QUARTER = "quarter"
+    YEAR = "year"
+
+
+class DateValue(abc.ABC):
+    pass
+
+
+@dataclass
+class DateEntityValue(DateValue):
+    date: datetime
+    grain: DateGrain
+
+
+@dataclass
+class DateIntervalEntityValue(DateValue):
+    date: DateValue
+    to_date: DateValue
+
+
+@dataclass
+class DistanceValue(Value):
+    value: int
+    unit: str
+
+
+@dataclass
+class DurationValue(Value):
+    value: str
+
+    def to_timedelta(self) -> timedelta:
+        return parse_duration(self.value)
+
+
+@dataclass
+class EmailValue(Value):
+    value: str
+
+
+@dataclass
+class NumberValue(Value):
+    value: int
+
+
+@dataclass
+class OrdinalValue(Value):
+    value: int
+
+
+@dataclass
+class PhoneNumberValue(Value):
+    value: str
+
+
+@dataclass
+class StringValue(Value):
+    value: str
+    candidates: List[Candidate]
+
+
+class TemperatureUnit(Enum):
+    CELSIUS = "celsius"
+    FAHRENHEIT = "fahrenheit"
+    DEGREE = "degree"
+
+
+@dataclass
+class TemperatureValue(Value):
+    value: int
+    unit: TemperatureUnit
+
+
+@dataclass
+class UrlValue(Value):
+    value: str
+
+
+@dataclass
+class VolumeValue(Value):
+    value: int
+    unit: str
+
+
 @dataclass
 class Entity:
     type: str
@@ -23,7 +135,7 @@ class Entity:
     sub_entities = []
     new: bool
     content: str = None
-    value: Optional[str] = None
+    value: Optional[Value] = None
 
 
 @dataclass

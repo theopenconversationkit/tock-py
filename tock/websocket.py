@@ -46,8 +46,7 @@ class TockWebsocket:
                         tock_response = tock_message_schema.dumps(self.__bot_handler(tock_request))
                         self.__logger.debug(f"new event sent : {tock_response}")
                         await ws.send_str(tock_response)
-                    except JSONDecodeError:
-                        e = sys.exc_info()[0]
+                    except Exception as e:
                         self.__logger.exception(e)
                         pass
                 elif msg.type == aiohttp.WSMsgType.CLOSED:
