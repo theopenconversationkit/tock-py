@@ -9,8 +9,8 @@ from tock.models import TockMessage, BotRequest, User, UserId, ConnectorType, \
     Sentence, I18nText, Suggestion, PlayerType, Card, AttachmentType, \
     Attachment, Action, Carousel, StoryConfiguration, \
     StepConfiguration, ClientConfiguration, StringValue, DurationValue, Candidate, DistanceValue, AmountOfMoneyValue, \
-    TemperatureValue, TemperatureUnit, DateGrain, DateValue, DateIntervalEntityValue, DateEntityValue, EmailValue, \
-    NumberValue, OrdinalValue, PhoneNumberValue, UrlValue
+    TemperatureValue, TemperatureUnit, DateGrain, DateIntervalEntityValue, DateEntityValue, EmailValue, \
+    NumberValue, OrdinalValue, PhoneNumberValue, UrlValue, VolumeValue
 
 
 def camelcase(s):
@@ -162,6 +162,15 @@ class UrlValueSchema(TockSchema):
         return UrlValue(**data)
 
 
+class VolumeValueSchema(TockSchema):
+    value = fields.Number(required=True)
+    unit = fields.String(required=True)
+
+    @post_load
+    def make_volume_value(self, data, **kwargs) -> VolumeValue:
+        return VolumeValue(**data)
+
+
 class UberValueSchema(OneOfSchema):
     type_field = "@type"
     type_schemas = {
@@ -177,6 +186,7 @@ class UberValueSchema(OneOfSchema):
         "string": StringValueSchema,
         "temperature": TemperatureValueSchema,
         "url": UrlValueSchema,
+        "volume": VolumeValueSchema,
     }
 
     def get_obj_type(self, obj):
@@ -204,6 +214,8 @@ class UberValueSchema(OneOfSchema):
             return "temperature"
         if isinstance(obj, UrlValue):
             return "url"
+        if isinstance(obj, VolumeValue):
+            return "volume"
         else:
             raise Exception("Unknown object type: {}".format(obj.__class__.__name__))
 

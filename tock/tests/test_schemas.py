@@ -9,15 +9,15 @@ from tock.models import ConnectorType, Entity, Message, UserId, \
     Sentence, ResponseContext, BotRequest, BotResponse, \
     TockMessage, Card, Attachment, AttachmentType, Action, Carousel, \
     ClientConfiguration, StoryConfiguration, Candidate, StringValue, DurationValue, DistanceValue, \
-    AmountOfMoneyValue, TemperatureValue, TemperatureUnit, DateIntervalEntityValue, DateValue, DateEntityValue, \
-    DateGrain, EmailValue, NumberValue, OrdinalValue, PhoneNumberValue, UrlValue
+    AmountOfMoneyValue, TemperatureValue, TemperatureUnit, DateIntervalEntityValue, DateEntityValue, \
+    DateGrain, EmailValue, NumberValue, OrdinalValue, PhoneNumberValue, UrlValue, VolumeValue
 from tock.schemas import ConnectorTypeSchema, EntitySchema, MessageSchema, UserIdSchema, UserSchema, \
     RequestContextSchema, SuggestionSchema, I18NTextSchema, \
     ResponseContextSchema, BotRequestSchema, BotResponseSchema, TockMessageSchema, \
     CardSchema, SentenceSchema, AttachmentSchema, ActionSchema, CarouselSchema, ClientConfigurationSchema, \
     StoryConfigurationSchema, DurationValueSchema, StringValueSchema, DistanceValueSchema, \
     AmountOfMoneyValueSchema, TemperatureValueSchema, DateIntervalEntityValueSchema, DateEntityValueSchema, \
-    EmailValueSchema, NumberValueSchema, OrdinalValueSchema, PhoneNumberValueSchema, UrlValueSchema
+    EmailValueSchema, NumberValueSchema, OrdinalValueSchema, PhoneNumberValueSchema, UrlValueSchema, VolumeValueSchema
 
 
 def given_amount_of_money_value() -> AmountOfMoneyValue:
@@ -99,6 +99,13 @@ def given_temperature_value() -> TemperatureValue:
 def given_url_value() -> UrlValue:
     return UrlValue(
         value="https://api.wit.ai/message?q=hi"
+    )
+
+
+def given_volume_value() -> VolumeValue:
+    return VolumeValue(
+        value=4,
+        unit="gallons"
     )
 
 
@@ -393,6 +400,14 @@ class TestUrlValueSchema(TestCase):
     def test_json_serialization(self):
         expected = given_url_value()
         schema = UrlValueSchema()
+        result = schema.load(json.loads(schema.dumps(expected)))
+        self.assertEqual(expected, result)
+
+
+class TestVolumeValueSchema(TestCase):
+    def test_json_serialization(self):
+        expected = given_volume_value()
+        schema = VolumeValueSchema()
         result = schema.load(json.loads(schema.dumps(expected)))
         self.assertEqual(expected, result)
 

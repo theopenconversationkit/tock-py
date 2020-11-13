@@ -122,6 +122,12 @@ class UrlValue(Value):
 
 
 @dataclass
+class VolumeValue(Value):
+    value: int
+    unit: str
+
+
+@dataclass
 class Entity:
     type: str
     role: str
