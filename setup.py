@@ -33,7 +33,7 @@ setuptools.setup(
     url="https://github.com/theopenconversationkit/tock-py/",
     packages=setuptools.find_packages(),
     install_requires=[
-        'aiohttp==3.7.2',
+        'aiohttp==3.7.4',
         'asyncio==3.4.3',
         'isodate==0.6.0',
         'marshmallow==3.9.1',
