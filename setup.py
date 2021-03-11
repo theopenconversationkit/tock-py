@@ -33,12 +33,13 @@ setuptools.setup(
     url="https://github.com/theopenconversationkit/tock-py/",
     packages=setuptools.find_packages(),
     install_requires=[
-        'aiohttp==3.6.2',
+        'aiohttp==3.7.2',
         'asyncio==3.4.3',
-        'marshmallow==3.7.1',
+        'isodate==0.6.0',
+        'marshmallow==3.9.1',
         'marshmallow_enum==1.5.1',
-        'marshmallow-oneofschema==2.0.1',
-        'testfixtures==6.14.2',
+        'marshmallow-oneofschema==2.1.0',
+        'testfixtures==6.15.0',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
