@@ -31,6 +31,7 @@ class TockWebhook:
         self.__app.add_routes([
             web.post(f'/{self.__path}/webhook', self.__webhook)
         ])
+        self.__logger.info(f"Webhook server started on {self.__host}:{self.__port}/{self.__path}/webhook")
 
     def start(self):
         web.run_app(host=self.__host, app=self.__app, port=self.__port)

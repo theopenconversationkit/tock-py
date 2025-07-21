@@ -1,7 +1,7 @@
-aiohttp==3.7.4
-asyncio==3.4.3
-isodate==0.6.0
-marshmallow==3.9.1
+aiohttp==3.10.11
+isodate==0.7.2
+marshmallow==3.23.2
 marshmallow_enum==1.5.1
-marshmallow-oneofschema==2.1.0
-testfixtures==6.15.0
+marshmallow-oneofschema==3.1.1
+testfixtures==8.3.0
+setuptools==75.6.0

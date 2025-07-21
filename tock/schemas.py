@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from marshmallow import Schema, fields, EXCLUDE, post_load, post_dump
+from marshmallow import Schema, fields, EXCLUDE, post_load, post_dump ,pre_load
 from marshmallow.fields import String
 from marshmallow_enum import EnumField
 from marshmallow_oneofschema import OneOfSchema
@@ -272,7 +272,7 @@ class UserSchema(TockSchema):
         return User(**data)
 
 
-class RequestContextSchema(TockSchema):
+""" class RequestContextSchema(TockSchema):
     namespace = fields.String(required=True)
     language = fields.String(required=True)
     connector_type = fields.Nested(ConnectorTypeSchema)
@@ -284,7 +284,51 @@ class RequestContextSchema(TockSchema):
 
     @post_load
     def make_request_context(self, data, **kwargs) -> RequestContext:
+        return RequestContext(**data) """
+
+#modified
+class RequestContextSchema(TockSchema):
+    namespace = fields.String(required=True)
+    language = fields.String(required=True)
+    connector_type = fields.Nested(ConnectorTypeSchema)
+    user_interface = fields.String(required=True)
+    application_id = fields.String(required=True)
+    user_id = fields.Nested(UserIdSchema)
+    bot_id = fields.Nested(UserIdSchema)
+    user = fields.Nested(UserSchema)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._source_connector_type = None  # Variable temporaire 
+
+    @pre_load
+    def save_source_connector_type(self, data, **kwargs):
+        """
+        Sauvegarde `sourceConnectorType` dans une variable d'instance temporaire.
+        """
+        if "sourceConnectorType" in data:
+            self._source_connector_type = data["sourceConnectorType"]
+        return data
+
+
+    @post_load
+    def make_request_context(self, data, **kwargs) -> RequestContext:
+
+        # Si `connector_type` est absent, ajoutez-le manuellement
+        if "connector_type" not in data:
+            print("Manually adding connector_type in POST_LOAD")
+            print(self._source_connector_type)
+            if self._source_connector_type:
+                # Utilisez la valeur sauvegardée pour initialiser `connector_type`
+                data["connector_type"] = ConnectorType(id=self._source_connector_type['id'], user_interface_type=self._source_connector_type['userInterfaceType'])
+            else:
+                # Fallback : ajoutez une valeur par défaut
+                data["connector_type"] = ConnectorType(id="rest", user_interface_type="textChat")
+
+            
         return RequestContext(**data)
+
+
 
 
 class I18NTextSchema(TockSchema):
