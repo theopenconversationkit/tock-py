@@ -39,7 +39,7 @@ def whoareyou(bus: TockBotBus):
     # Store message in session history
     history = bus.session.get_item("history") or []
     history.append(user_message)
-    bus.session.set_item("history",history)
+    bus.session.set_item("history", history)
 
     for msg in history:
         logging.info('--------')
