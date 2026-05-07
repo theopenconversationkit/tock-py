@@ -1,0 +1,5 @@
+wheel
+isodate==0.7.2
+multidict
+aiohttp==3.10.11
+tock-py==0.1.0
