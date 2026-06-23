@@ -32,9 +32,7 @@ Install tock-py on your project
     import logging
     import os
     
-    from tock.bot import TockBot
-    from tock.bus import TockBotBus
-    from tock.story import story
+    from tock import TockBot, TockBotBus, story
     
     logging.basicConfig(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -124,3 +122,4 @@ You can clear session
 
     def goodbye(bus):
         bus.session.clear()
+
