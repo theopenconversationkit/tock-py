@@ -216,25 +216,13 @@ class Sentence(BotMessage):
             self.__suggestions = []
             self.__delay = 0
 
-        def with_text(self, text: Any):
-            if isinstance(text, I18nText):
-                self.__text = text
-            else:
-                self.__text = I18nText(
-                    text=text,
-                    args=[],
-                    to_be_translated=True,
-                    length=len(text)
-                )
-            return self
-
         def add_suggestion(self, title: str):
             self.__suggestions.append(Suggestion(
                 title=I18nText(
                     text=title,
                     args=[],
                     to_be_translated=True,
-                    length=len(self.__text)
+                    length=len(title)
                 )
             ))
             return self
